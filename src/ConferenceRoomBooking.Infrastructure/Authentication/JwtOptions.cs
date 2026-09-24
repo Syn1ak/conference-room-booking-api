@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ConferenceRoomBooking.Infrastructure.Authentication;
 
@@ -22,4 +24,7 @@ public sealed class JwtOptions
 
     [Range(1, 1440)]
     public int LifetimeMinutes { get; init; } = 60;
+
+    /// <summary>The key used both to sign tokens and to verify their signature.</summary>
+    public SymmetricSecurityKey CreateSigningKey() => new(Encoding.UTF8.GetBytes(SigningKey));
 }

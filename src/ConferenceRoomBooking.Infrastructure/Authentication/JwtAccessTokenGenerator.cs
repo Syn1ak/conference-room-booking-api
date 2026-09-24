@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Text;
 using ConferenceRoomBooking.Application.Auth;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -39,9 +38,7 @@ public sealed class JwtAccessTokenGenerator(IOptions<JwtOptions> options, TimePr
             IssuedAt = issuedAt.UtcDateTime,
             NotBefore = issuedAt.UtcDateTime,
             Expires = expiresAt.UtcDateTime,
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
-                SecurityAlgorithms.HmacSha256),
+            SigningCredentials = new SigningCredentials(jwtOptions.CreateSigningKey(), SecurityAlgorithms.HmacSha256),
         };
 
         return new AccessToken(_tokenHandler.CreateToken(descriptor), expiresAt);

@@ -7,7 +7,7 @@ namespace ConferenceRoomBooking.Api.Auth;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController(AuthService authService) : ControllerBase
+public sealed class AuthController(AuthService authService, ICurrentUser currentUser) : ControllerBase
 {
     /// <summary>
     /// Creates a Client account. Admin accounts can't be created through the API.
@@ -46,4 +46,13 @@ public sealed class AuthController(AuthService authService) : ControllerBase
 
         return Ok(new LoginResponse(accessToken.Value, "Bearer", accessToken.ExpiresAt));
     }
+
+    /// <summary>
+    /// Returns the account the access token belongs to.
+    /// </summary>
+    [HttpGet("me")]
+    [ProducesResponseType<CurrentUserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public ActionResult<CurrentUserResponse> Me() =>
+        Ok(new CurrentUserResponse(currentUser.Id, currentUser.Email, currentUser.Roles));
 }

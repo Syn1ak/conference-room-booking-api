@@ -50,6 +50,17 @@ public static class AuthServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Makes the authenticated user of the current request available to use cases as <see cref="ICurrentUser"/>.
+    /// </summary>
+    public static IServiceCollection AddCurrentUser(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
+
+        return services;
+    }
+
+    /// <summary>
     /// Registers the role-based policies and makes every endpoint require an authenticated user
     /// unless it explicitly allows anonymous access.
     /// </summary>

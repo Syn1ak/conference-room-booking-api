@@ -1,5 +1,6 @@
 using ConferenceRoomBooking.Api.Auth;
 using ConferenceRoomBooking.Api.OpenApi;
+using ConferenceRoomBooking.Api.RateLimiting;
 using ConferenceRoomBooking.Application;
 using ConferenceRoomBooking.Infrastructure;
 using ConferenceRoomBooking.Infrastructure.Identity;
@@ -13,6 +14,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddJwtAuthentication();
 builder.Services.AddCurrentUser();
 builder.Services.AddAuthorizationPolicies();
+builder.Services.AddApiRateLimiting(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddApiDocumentation();
@@ -52,6 +54,8 @@ app.UseSwaggerUI(options =>
 });
 
 app.UseAuthentication();
+// After authentication, so authenticated users are limited per account rather than per IP address.
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();

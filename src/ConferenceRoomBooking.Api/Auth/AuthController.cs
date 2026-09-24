@@ -1,7 +1,9 @@
 using ConferenceRoomBooking.Api.Common;
+using ConferenceRoomBooking.Api.RateLimiting;
 using ConferenceRoomBooking.Application.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ConferenceRoomBooking.Api.Auth;
 
@@ -14,8 +16,10 @@ public sealed class AuthController(AuthService authService, ICurrentUser current
     /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Authentication)]
     [ProducesResponseType<RegisterResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<RegisterResponse>> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
         var result = await authService.RegisterClientAsync(request.Email, request.Password, cancellationToken);
@@ -31,9 +35,11 @@ public sealed class AuthController(AuthService authService, ICurrentUser current
     /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Authentication)]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
         var result = await authService.LoginAsync(request.Email, request.Password);

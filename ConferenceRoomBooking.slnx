@@ -4,4 +4,7 @@
     <Project Path="src/ConferenceRoomBooking.Application/ConferenceRoomBooking.Application.csproj" />
     <Project Path="src/ConferenceRoomBooking.Infrastructure/ConferenceRoomBooking.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ConferenceRoomBooking.UnitTests/ConferenceRoomBooking.UnitTests.csproj" />
+  </Folder>
 </Solution>

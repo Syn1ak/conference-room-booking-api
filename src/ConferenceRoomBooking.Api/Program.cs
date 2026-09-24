@@ -17,6 +17,9 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddControllers();
 builder.Services.AddApiDocumentation();
 
+// Every error response, including unhandled exceptions and bare status codes, is RFC 7807 ProblemDetails with a trace id.
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,6 +30,16 @@ if (app.Environment.IsDevelopment())
 }
 
 await app.Services.SeedIdentityDataAsync();
+
+if (!app.Environment.IsDevelopment())
+{
+    // Unhandled exceptions return a generic 500 ProblemDetails; details stay in the logs.
+    // In Development, the built-in developer exception page returns them with the stack trace instead.
+    app.UseExceptionHandler();
+}
+
+// Adds a ProblemDetails body to error responses that have none, such as 401 or 404.
+app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 

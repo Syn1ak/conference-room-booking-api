@@ -1,5 +1,6 @@
 using ConferenceRoomBooking.Application;
 using ConferenceRoomBooking.Infrastructure;
+using ConferenceRoomBooking.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // Keep the local database schema up to date. Deployed environments migrate during deployment instead.
+    await app.Services.ApplyDatabaseMigrationsAsync();
+
     app.MapOpenApi();
 }
 

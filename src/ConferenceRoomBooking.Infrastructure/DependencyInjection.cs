@@ -1,9 +1,12 @@
+using ConferenceRoomBooking.Application.Auth;
+using ConferenceRoomBooking.Infrastructure.Authentication;
 using ConferenceRoomBooking.Infrastructure.Identity;
 using ConferenceRoomBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace ConferenceRoomBooking.Infrastructure;
 
@@ -18,6 +21,7 @@ public static class DependencyInjection
     {
         services.AddPersistence(configuration);
         services.AddIdentityServices(configuration);
+        services.AddAccessTokens(configuration);
 
         return services;
     }
@@ -60,5 +64,17 @@ public static class DependencyInjection
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
+    }
+
+    private static void AddAccessTokens(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
     }
 }

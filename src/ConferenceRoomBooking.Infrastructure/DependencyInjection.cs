@@ -45,6 +45,7 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services.AddScoped<IdentitySeeder>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         services
             .AddIdentityCore<ApplicationUser>(options =>

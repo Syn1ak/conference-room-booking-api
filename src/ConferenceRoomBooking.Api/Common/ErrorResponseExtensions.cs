@@ -13,6 +13,7 @@ public static class ErrorResponseExtensions
     public static ActionResult ErrorResponse(this ControllerBase controller, Error error) => error.Type switch
     {
         ErrorType.Validation => controller.ValidationProblem(ToModelState(error)),
+        ErrorType.Unauthorized => controller.Problem(title: error.Description, statusCode: StatusCodes.Status401Unauthorized),
         _ => throw new ArgumentOutOfRangeException(nameof(error), error.Type, "Unsupported error type."),
     };
 

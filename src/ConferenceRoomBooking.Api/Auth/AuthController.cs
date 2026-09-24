@@ -24,4 +24,26 @@ public sealed class AuthController(AuthService authService) : ControllerBase
             ? StatusCode(StatusCodes.Status201Created, new RegisterResponse(result.Value, request.Email))
             : this.ErrorResponse(result.Error);
     }
+
+    /// <summary>
+    /// Exchanges an email and password for an access token.
+    /// Repeated failures lock the account for a while.
+    /// </summary>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
+    {
+        var result = await authService.LoginAsync(request.Email, request.Password);
+        if (!result.IsSuccess)
+        {
+            return this.ErrorResponse(result.Error);
+        }
+
+        var accessToken = result.Value;
+
+        return Ok(new LoginResponse(accessToken.Value, "Bearer", accessToken.ExpiresAt));
+    }
 }

@@ -7,6 +7,9 @@ public enum ErrorType
 {
     /// <summary>The request is invalid, for example a weak password or an email that is already registered.</summary>
     Validation,
+
+    /// <summary>The caller couldn't be authenticated, for example because of wrong credentials.</summary>
+    Unauthorized,
 }
 
 /// <summary>
@@ -21,4 +24,7 @@ public sealed record Error(
 {
     public static Error Validation(string code, string description, IReadOnlyDictionary<string, string[]>? fieldErrors = null) =>
         new(code, description, ErrorType.Validation, fieldErrors);
+
+    public static Error Unauthorized(string code, string description) =>
+        new(code, description, ErrorType.Unauthorized);
 }

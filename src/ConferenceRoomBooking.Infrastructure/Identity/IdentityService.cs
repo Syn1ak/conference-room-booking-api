@@ -46,6 +46,36 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager, Ap
         return user.Id;
     }
 
+    public async Task<Result<UserAccount>> CheckCredentialsAsync(string email, string password)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            // Hash the password anyway, so an unknown email takes as long as a wrong password
+            // and response times don't reveal which accounts exist.
+            userManager.PasswordHasher.HashPassword(new ApplicationUser(), password);
+            return AuthErrors.InvalidCredentials;
+        }
+
+        if (await userManager.IsLockedOutAsync(user))
+        {
+            return AuthErrors.InvalidCredentials;
+        }
+
+        if (!await userManager.CheckPasswordAsync(user, password))
+        {
+            // Counts towards lockout; the account locks after the configured number of failures.
+            await userManager.AccessFailedAsync(user);
+            return AuthErrors.InvalidCredentials;
+        }
+
+        await userManager.ResetAccessFailedCountAsync(user);
+
+        var roles = await userManager.GetRolesAsync(user);
+
+        return new UserAccount(user.Id, user.Email!, [.. roles]);
+    }
+
     /// <summary>
     /// Translates Identity's errors into an application error, grouping the messages by input field.
     /// </summary>

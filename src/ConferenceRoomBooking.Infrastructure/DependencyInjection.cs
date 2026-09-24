@@ -17,7 +17,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddPersistence(configuration);
-        services.AddIdentityServices();
+        services.AddIdentityServices(configuration);
 
         return services;
     }
@@ -32,8 +32,16 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
     }
 
-    private static void AddIdentityServices(this IServiceCollection services)
+    private static void AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services
+            .AddOptions<AdminAccountOptions>()
+            .Bind(configuration.GetSection(AdminAccountOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddScoped<IdentitySeeder>();
+
         services
             .AddIdentityCore<ApplicationUser>(options =>
             {

@@ -1,5 +1,6 @@
 using ConferenceRoomBooking.Application;
 using ConferenceRoomBooking.Infrastructure;
+using ConferenceRoomBooking.Infrastructure.Identity;
 using ConferenceRoomBooking.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,8 @@ if (app.Environment.IsDevelopment())
 
     app.MapOpenApi();
 }
+
+await app.Services.SeedIdentityDataAsync();
 
 app.UseHttpsRedirection();
 

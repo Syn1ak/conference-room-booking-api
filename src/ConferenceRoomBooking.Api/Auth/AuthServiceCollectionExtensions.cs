@@ -22,9 +22,12 @@ public static class AuthServiceCollectionExtensions
         // Validate tokens with the same (startup-validated) settings that are used to issue them.
         services
             .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-            .Configure<IOptions<JwtOptions>>((bearerOptions, jwtOptions) =>
+            .Configure<IOptions<JwtOptions>, IHostEnvironment>((bearerOptions, jwtOptions, environment) =>
             {
                 var jwt = jwtOptions.Value;
+
+                // Say why a token was rejected (e.g. "signature key was not found") only in Development.
+                bearerOptions.IncludeErrorDetails = environment.IsDevelopment();
 
                 // Keep claim names as they appear in the token ("sub", "email", "role").
                 bearerOptions.MapInboundClaims = false;

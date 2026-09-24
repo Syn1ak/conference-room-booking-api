@@ -38,6 +38,9 @@ if (!app.Environment.IsDevelopment())
     // Unhandled exceptions return a generic 500 ProblemDetails; details stay in the logs.
     // In Development, the built-in developer exception page returns them with the stack trace instead.
     app.UseExceptionHandler();
+
+    // Tell browsers to use only HTTPS for this host. Not in Development, where it would stick to localhost.
+    app.UseHsts();
 }
 
 // Adds a ProblemDetails body to error responses that have none, such as 401 or 404.

@@ -43,6 +43,14 @@ public static class BookingErrors
     public static Error ServiceNotOffered(Guid serviceId) => FieldError(
         "Booking.ServiceNotOffered", "ServiceIds", $"The room doesn't offer the service {serviceId}.");
 
+    public static readonly Error AlreadyCancelled = Error.Validation(
+        "Booking.AlreadyCancelled",
+        "The booking is already cancelled.");
+
+    public static readonly Error AlreadyStarted = Error.Validation(
+        "Booking.AlreadyStarted",
+        "A booking can't be cancelled once it has started.");
+
     private static Error FieldError(string code, string field, string message) =>
         Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });
 }

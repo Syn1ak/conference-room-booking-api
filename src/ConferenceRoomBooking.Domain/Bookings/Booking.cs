@@ -43,6 +43,9 @@ public sealed class Booking
 
     public BookingStatus Status { get; private set; }
 
+    /// <summary>When the booking was cancelled, in UTC, or <see langword="null"/> while it's confirmed.</summary>
+    public DateTimeOffset? CancelledAt { get; private set; }
+
     /// <summary>The room's base hourly price in UAH at booking time.</summary>
     public decimal RoomHourlyPrice { get; }
 
@@ -84,5 +87,25 @@ public sealed class Booking
 
         return new Booking(
             Guid.CreateVersion7(), room.Id, clientId, slot, attendeeCount, room.HourlyPrice, bookedServices);
+    }
+
+    /// <summary>
+    /// Cancels a confirmed booking that hasn't started yet, freeing its time slot.
+    /// </summary>
+    public Result Cancel(DateTimeOffset now)
+    {
+        if (Status == BookingStatus.Cancelled)
+        {
+            return BookingErrors.AlreadyCancelled;
+        }
+
+        if (now >= Slot.Start)
+        {
+            return BookingErrors.AlreadyStarted;
+        }
+
+        Status = BookingStatus.Cancelled;
+        CancelledAt = now.ToUniversalTime();
+        return Result.Success;
     }
 }

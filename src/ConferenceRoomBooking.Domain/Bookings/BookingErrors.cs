@@ -30,4 +30,19 @@ public static class BookingErrors
     public static readonly Error TooFarAhead = Error.Validation(
         "Booking.TooFarAhead",
         $"A booking can start at most {BookingSlot.MaximumYearsAhead} year ahead.");
+
+    public static readonly Error NoAttendees = FieldError(
+        "Booking.NoAttendees", nameof(Booking.AttendeeCount), "A booking needs at least 1 attendee.");
+
+    public static Error ExceedsCapacity(int capacity) => FieldError(
+        "Booking.ExceedsCapacity", nameof(Booking.AttendeeCount), $"The room holds at most {capacity} people.");
+
+    public static readonly Error ServiceChosenTwice = FieldError(
+        "Booking.ServiceChosenTwice", "ServiceIds", "Each service can be chosen only once.");
+
+    public static Error ServiceNotOffered(Guid serviceId) => FieldError(
+        "Booking.ServiceNotOffered", "ServiceIds", $"The room doesn't offer the service {serviceId}.");
+
+    private static Error FieldError(string code, string field, string message) =>
+        Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });
 }

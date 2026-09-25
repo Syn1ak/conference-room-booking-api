@@ -19,6 +19,15 @@ public static class RoomErrors
     public static readonly Error HourlyPriceNegative = FieldError(
         "Room.HourlyPriceNegative", nameof(Room.HourlyPrice), "The hourly price can't be negative.");
 
+    public static readonly Error ServiceAlreadyOffered = FieldError(
+        "Room.ServiceAlreadyOffered", nameof(ServiceOffering.ServiceId), "The room already offers this service.");
+
+    public static readonly Error ServiceNotOffered = FieldError(
+        "Room.ServiceNotOffered", nameof(ServiceOffering.ServiceId), "The room doesn't offer this service.");
+
+    public static readonly Error ServicePriceNegative = FieldError(
+        "Room.ServicePriceNegative", nameof(ServiceOffering.Price), "The service price can't be negative.");
+
     private static Error FieldError(string code, string field, string message) =>
         Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });
 }

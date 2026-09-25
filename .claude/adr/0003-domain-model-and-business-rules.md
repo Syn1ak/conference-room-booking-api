@@ -35,7 +35,7 @@ Id                           Id                            Id
 Name (unique)                Name (unique)                 RoomId
 StandardPrice                Capacity                      ClientId
                              HourlyPrice                   Start, End (UTC)
-                             Offerings: RoomService[]      AttendeeCount
+                             Offerings: ServiceOffering[]  AttendeeCount
                                ServiceId                   Status, CancelledAt
                                Price                       RoomHourlyPrice (snapshot)
                                                            BookedServices[] (snapshot)
@@ -44,7 +44,7 @@ StandardPrice                Capacity                      ClientId
 ```
 
 - **Service** is a catalog entry managed by admins. It has a unique name and a standard price, for example Projector at 500 UAH.
-- **Room** has a unique name, a capacity greater than 0, an hourly price of at least 0, and the services it offers. Each offering (`RoomService`) has its own price for that room, which defaults to the service's standard price. A room offers each service at most once.
+- **Room** has a unique name, a capacity greater than 0, an hourly price of at least 0, and the services it offers. Each offering (`ServiceOffering`) has its own price for that room, which defaults to the service's standard price. A room offers each service at most once.
 - **Booking** belongs to one client and one room. `ClientId` is the user's id. Domain knows nothing about ASP.NET Core Identity.
 - Money is a plain `decimal` in UAH, the only currency.
 

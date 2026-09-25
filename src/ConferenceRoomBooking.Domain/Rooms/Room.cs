@@ -1,13 +1,17 @@
 using ConferenceRoomBooking.Domain.Common;
+using ConferenceRoomBooking.Domain.Services;
 
 namespace ConferenceRoomBooking.Domain.Rooms;
 
 /// <summary>
-/// A conference room that clients can book, with how many people it holds and its base rental price per hour.
+/// A conference room that clients can book, with how many people it holds, its base rental price per hour,
+/// and the services it offers.
 /// </summary>
 public sealed class Room
 {
     public const int NameMaxLength = 100;
+
+    private readonly List<ServiceOffering> _offerings = [];
 
     private Room(Guid id, string name, int capacity, decimal hourlyPrice)
     {
@@ -26,6 +30,9 @@ public sealed class Room
 
     /// <summary>Base rental price per hour in UAH, before time-of-day discounts and surcharges.</summary>
     public decimal HourlyPrice { get; private set; }
+
+    /// <summary>The catalog services this room offers, each at most once.</summary>
+    public IReadOnlyCollection<ServiceOffering> Offerings => _offerings;
 
     public static Result<Room> Create(string name, int capacity, decimal hourlyPrice)
     {
@@ -49,6 +56,56 @@ public sealed class Room
         HourlyPrice = hourlyPrice;
         return Result.Success;
     }
+
+    /// <summary>
+    /// Starts offering a catalog service in this room, at the given price or, if none is given, the service's standard price.
+    /// </summary>
+    public Result OfferService(Service service, decimal? price = null)
+    {
+        if (FindOffering(service.Id) is not null)
+        {
+            return RoomErrors.ServiceAlreadyOffered;
+        }
+
+        var offeringPrice = price ?? service.StandardPrice;
+        if (offeringPrice < 0)
+        {
+            return RoomErrors.ServicePriceNegative;
+        }
+
+        _offerings.Add(new ServiceOffering(service, offeringPrice));
+        return Result.Success;
+    }
+
+    public Result ChangeServicePrice(Guid serviceId, decimal price)
+    {
+        if (FindOffering(serviceId) is not { } offering)
+        {
+            return RoomErrors.ServiceNotOffered;
+        }
+
+        if (price < 0)
+        {
+            return RoomErrors.ServicePriceNegative;
+        }
+
+        offering.ChangePrice(price);
+        return Result.Success;
+    }
+
+    public Result StopOfferingService(Guid serviceId)
+    {
+        if (FindOffering(serviceId) is not { } offering)
+        {
+            return RoomErrors.ServiceNotOffered;
+        }
+
+        _offerings.Remove(offering);
+        return Result.Success;
+    }
+
+    private ServiceOffering? FindOffering(Guid serviceId) =>
+        _offerings.Find(offering => offering.ServiceId == serviceId);
 
     private static Error? Validate(string name, int capacity, decimal hourlyPrice)
     {

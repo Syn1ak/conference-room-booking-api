@@ -1,4 +1,4 @@
-using ConferenceRoomBooking.Application.Common;
+using ConferenceRoomBooking.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

@@ -1,4 +1,4 @@
-namespace ConferenceRoomBooking.Application.Common;
+namespace ConferenceRoomBooking.Domain.Common;
 
 /// <summary>
 /// Category of an expected failure. The API maps each category to an HTTP status code.

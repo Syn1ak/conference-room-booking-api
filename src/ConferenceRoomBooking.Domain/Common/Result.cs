@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace ConferenceRoomBooking.Application.Common;
+namespace ConferenceRoomBooking.Domain.Common;
 
 /// <summary>
 /// The outcome of a use case: either a value or an <see cref="Common.Error"/>.

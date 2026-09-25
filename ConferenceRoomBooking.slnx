@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/ConferenceRoomBooking.Api/ConferenceRoomBooking.Api.csproj" />
     <Project Path="src/ConferenceRoomBooking.Application/ConferenceRoomBooking.Application.csproj" />
+    <Project Path="src/ConferenceRoomBooking.Domain/ConferenceRoomBooking.Domain.csproj" />
     <Project Path="src/ConferenceRoomBooking.Infrastructure/ConferenceRoomBooking.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">

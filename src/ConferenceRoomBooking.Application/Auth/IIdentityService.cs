@@ -1,4 +1,4 @@
-using ConferenceRoomBooking.Application.Common;
+using ConferenceRoomBooking.Domain.Common;
 
 namespace ConferenceRoomBooking.Application.Auth;
 

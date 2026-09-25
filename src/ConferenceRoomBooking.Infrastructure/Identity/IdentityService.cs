@@ -1,5 +1,5 @@
 using ConferenceRoomBooking.Application.Auth;
-using ConferenceRoomBooking.Application.Common;
+using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 

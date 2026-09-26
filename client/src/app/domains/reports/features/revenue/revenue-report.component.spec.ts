@@ -70,7 +70,7 @@ describe('RevenueReportComponent', () => {
     http.expectOne((r) => r.url === '/api/reports/revenue').flush(REPORT);
     await fixture.whenStable();
 
-    expect(screen.getByRole('img')).toHaveAccessibleName(
+    expect(screen.getByRole('group')).toHaveAccessibleName(
       'Revenue of confirmed bookings: 2 bars, highest 8,400.00 UAH in 1 Oct – 31 Oct 2026.',
     );
     expect(screen.getByRole('row', { name: /Room A/ })).toHaveTextContent('9,400.00 UAH');

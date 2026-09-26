@@ -14,7 +14,7 @@
 <div ngTabs class="mt-8">
   <ul
     ngTabList
-    class="flex gap-1 border-b border-line"
+    class="relative flex gap-1 overflow-x-auto border-b border-line whitespace-nowrap"
     [selectedTab]="$selectedReport()"
     (selectedTabChange)="showReport($event)"
   >

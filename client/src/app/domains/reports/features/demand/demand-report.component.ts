@@ -32,7 +32,7 @@ const BAND_BARS: Record<string, string> = {
         <app-error-state title="Couldn't load the demand report" (retry)="report.reload()" />
       </app-card>
     } @else if ($data(); as data) {
-      <div class="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
         <app-card>
           <h3 class="text-sm font-semibold text-ink">Booked share of each band</h3>
           <ul class="mt-5 grid gap-5">

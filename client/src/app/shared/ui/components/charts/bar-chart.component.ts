@@ -29,7 +29,7 @@ const TONES = { 'chart-1': 'bg-chart-1', 'chart-2': 'bg-chart-2' };
         }
       </ul>
     }
-    <div class="relative" role="img" [attr.aria-label]="$summary()">
+    <div class="relative" role="group" [attr.aria-label]="$summary()">
       <div
         class="pointer-events-none absolute inset-x-0 top-0 border-t border-dashed border-line"
         aria-hidden="true"
@@ -38,11 +38,13 @@ const TONES = { 'chart-1': 'bg-chart-1', 'chart-2': 'bg-chart-2' };
           $format()($max())
         }}</span>
       </div>
-      <div class="flex h-48 items-end gap-1 border-b border-line-strong pt-3" aria-hidden="true">
+      <div class="flex h-48 items-end gap-1 border-b border-line-strong pt-3">
         @for (bar of $bars(); track bar.title; let index = $index) {
           <div
-            class="group relative flex h-full min-w-0 flex-1 flex-col-reverse gap-0.5 rounded-t outline-none"
+            class="group relative flex h-full min-w-0 flex-1 flex-col-reverse gap-0.5 rounded-t outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             tabindex="0"
+            role="img"
+            [attr.aria-label]="bar.description"
             (mouseenter)="$active.set(index)"
             (mouseleave)="$active.set(null)"
             (focus)="$active.set(index)"
@@ -76,31 +78,34 @@ const TONES = { 'chart-1': 'bg-chart-1', 'chart-2': 'bg-chart-2' };
         }
       </div>
     </div>
-    <table class="sr-only">
-      <caption>
-        {{
-          $caption()
-        }}
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Period</th>
-          @for (series of $series(); track series.name) {
-            <th scope="col">{{ series.name }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (datum of $data(); track datum.title) {
+    <!-- Visually hidden on a wrapper: tables ignore the tiny width that hides other elements. -->
+    <div class="sr-only">
+      <table>
+        <caption>
+          {{
+            $caption()
+          }}
+        </caption>
+        <thead>
           <tr>
-            <th scope="row">{{ datum.title }}</th>
-            @for (value of datum.values; track $index) {
-              <td>{{ $format()(value) }}</td>
+            <th scope="col">Period</th>
+            @for (series of $series(); track series.name) {
+              <th scope="col">{{ series.name }}</th>
             }
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (datum of $data(); track datum.title) {
+            <tr>
+              <th scope="row">{{ datum.title }}</th>
+              @for (value of datum.values; track $index) {
+                <td>{{ $format()(value) }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   `,
   host: { class: 'block' },
 })
@@ -129,6 +134,9 @@ export class BarChartComponent {
 
     return this.$data().map((datum) => ({
       ...datum,
+      description: `${datum.title}: ${datum.values
+        .map((value, index) => `${series[index]?.name ?? ''} ${this.$format()(value)}`)
+        .join(', ')}`,
       segments: datum.values.map((value, index) => ({
         value,
         name: series[index]?.name ?? '',

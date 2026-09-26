@@ -11,28 +11,28 @@
   </app-card>
 } @else if ($data(); as data) {
   <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    <app-card>
+    <div class="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6">
       <dt class="text-sm text-ink-muted">Confirmed revenue</dt>
       <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
         {{ data.confirmed.total | uah }}
       </dd>
       <dd class="mt-1 text-xs text-ink-subtle">{{ data.confirmed.bookingCount }} bookings</dd>
-    </app-card>
-    <app-card>
+    </div>
+    <div class="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6">
       <dt class="text-sm text-ink-muted">Earned</dt>
       <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
         {{ data.earned.total | uah }}
       </dd>
       <dd class="mt-1 text-xs text-ink-subtle">Bookings that have ended</dd>
-    </app-card>
-    <app-card>
+    </div>
+    <div class="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6">
       <dt class="text-sm text-ink-muted">Upcoming</dt>
       <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
         {{ data.upcoming.total | uah }}
       </dd>
       <dd class="mt-1 text-xs text-ink-subtle">On the books, not yet held</dd>
-    </app-card>
-    <app-card>
+    </div>
+    <div class="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6">
       <dt class="text-sm text-ink-muted">Lost to cancellations</dt>
       <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
         {{ data.cancellations.lostRevenue | uah }}
@@ -41,7 +41,7 @@
         {{ data.cancellations.count }} cancelled · {{ percent(data.cancellations.rate) }} of
         bookings
       </dd>
-    </app-card>
+    </div>
   </dl>
 
   <app-card class="mt-6">

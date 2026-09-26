@@ -9,21 +9,35 @@ export type THeatmapRow = { label: string; cells: { value: number; detail: strin
 @Component({
   selector: 'app-heatmap',
   template: `
-    <div class="overflow-x-auto" aria-hidden="true">
+    <div class="relative overflow-x-auto" role="group" [attr.aria-label]="$caption()">
       <div
         class="grid min-w-[28rem] gap-1"
         [style.grid-template-columns]="'4rem repeat(' + $columns().length + ', 1fr)'"
       >
-        <span></span>
+        <span aria-hidden="true"></span>
         @for (column of $columns(); track column) {
-          <span class="pb-1 text-center text-[11px] text-ink-subtle">{{ column }}</span>
+          <span class="pb-1 text-center text-[11px] text-ink-subtle" aria-hidden="true">{{
+            column
+          }}</span>
         }
         @for (row of $rows(); track row.label; let rowIndex = $index) {
-          <span class="flex items-center text-xs text-ink-muted">{{ row.label }}</span>
+          <span class="flex items-center text-xs text-ink-muted" aria-hidden="true">{{
+            row.label
+          }}</span>
           @for (cell of row.cells; track $index; let columnIndex = $index) {
             <div
               class="relative flex h-10 items-center justify-center rounded-md text-[11px] font-medium tabular-nums ring-line outline-none focus:ring-2"
               tabindex="0"
+              role="img"
+              [attr.aria-label]="
+                row.label +
+                ', ' +
+                $columns()[columnIndex] +
+                ': ' +
+                cell.percent +
+                ', ' +
+                cell.detail
+              "
               [style.background-color]="cell.color"
               [class]="cell.value > 0.55 ? 'text-white' : 'text-ink-muted'"
               (mouseenter)="$active.set(rowIndex + ':' + columnIndex)"
@@ -45,31 +59,34 @@ export type THeatmapRow = { label: string; cells: { value: number; detail: strin
         }
       </div>
     </div>
-    <table class="sr-only">
-      <caption>
-        {{
-          $caption()
-        }}
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col"></th>
-          @for (column of $columns(); track column) {
-            <th scope="col">{{ column }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of $rows(); track row.label) {
+    <!-- Visually hidden on a wrapper: tables ignore the tiny width that hides other elements. -->
+    <div class="sr-only">
+      <table>
+        <caption>
+          {{
+            $caption()
+          }}
+        </caption>
+        <thead>
           <tr>
-            <th scope="row">{{ row.label }}</th>
-            @for (cell of row.cells; track $index) {
-              <td>{{ cell.percent }}, {{ cell.detail }}</td>
+            <th scope="col"></th>
+            @for (column of $columns(); track column) {
+              <th scope="col">{{ column }}</th>
             }
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (row of $rows(); track row.label) {
+            <tr>
+              <th scope="row">{{ row.label }}</th>
+              @for (cell of row.cells; track $index) {
+                <td>{{ cell.percent }}, {{ cell.detail }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   `,
   host: { class: 'block' },
 })

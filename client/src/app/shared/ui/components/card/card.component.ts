@@ -7,7 +7,8 @@ import { booleanAttribute, Component, input } from '@angular/core';
   selector: 'app-card',
   template: '<ng-content />',
   host: {
-    class: 'block rounded-2xl border border-line bg-surface shadow-card',
+    // Relative, so visually hidden content inside a scrolling card can't widen the page.
+    class: 'relative block rounded-2xl border border-line bg-surface shadow-card',
     '[class]': "$padded() ? 'p-5 sm:p-6' : ''",
   },
 })

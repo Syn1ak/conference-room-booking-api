@@ -22,7 +22,7 @@ import { TReportPeriod } from '../../utils/report-period.util';
         <app-error-state title="Couldn't load the occupancy report" (retry)="report.reload()" />
       </app-card>
     } @else if ($data(); as data) {
-      <div class="grid gap-4 lg:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 [&>*]:min-w-0">
         <app-card class="lg:col-span-2">
           <h3 class="text-sm font-semibold text-ink">All rooms</h3>
           <div class="mt-5 grid gap-6 sm:grid-cols-2">

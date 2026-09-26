@@ -26,9 +26,12 @@ describe('BarChartComponent', () => {
       { label: 'Oct', title: 'October', values: [300, 50] },
     ]);
 
-    expect(screen.getByRole('img')).toHaveAccessibleName(
+    expect(screen.getByRole('group')).toHaveAccessibleName(
       'Revenue by month: 2 bars, highest 350 UAH in October.',
     );
+    expect(
+      screen.getByRole('img', { name: 'October: Rental 300 UAH, Services 50 UAH' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('row', { name: /October/ })).toHaveTextContent('October300 UAH50 UAH');
   });
 
@@ -44,7 +47,7 @@ describe('BarChartComponent', () => {
 
   it('copes with all zeros and with no data', async () => {
     await renderChart([{ label: 'Oct', title: 'October', values: [0, 0] }]);
-    expect(screen.getByRole('img')).toHaveAccessibleName('Revenue by month: nothing yet.');
+    expect(screen.getByRole('group')).toHaveAccessibleName('Revenue by month: nothing yet.');
   });
 
   it('draws a single bar at full height', async () => {

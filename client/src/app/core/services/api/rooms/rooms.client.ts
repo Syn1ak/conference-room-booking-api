@@ -1,7 +1,7 @@
 import { HttpClient, HttpContext, httpResource, HttpResourceRef } from '@angular/common/http';
 import { inject, Injectable, Signal } from '@angular/core';
 import { Observable } from 'rxjs';
-import { IAvailableRoom, IRoom } from '../../../entities/rooms/room.dto';
+import { IAvailableRoom, IRoom, IRoomRequest } from '../../../entities/rooms/room.dto';
 
 export type TAvailabilityQuery = {
   /** ISO time with offset, for example 2026-10-01T10:00:00+03:00. */
@@ -31,6 +31,23 @@ export class RoomsClient {
 
       return query ? { url: '/api/rooms/available', params: { ...query } } : undefined;
     });
+  }
+
+  /** One room, reloaded when the id changes. Nothing is requested while the id is null. */
+  roomResource($id: Signal<string | null>): HttpResourceRef<IRoom | undefined> {
+    return httpResource<IRoom>(() => {
+      const id = $id();
+
+      return id ? `/api/rooms/${encodeURIComponent(id)}` : undefined;
+    });
+  }
+
+  create$(room: IRoomRequest, context?: HttpContext): Observable<IRoom> {
+    return this.http.post<IRoom>('/api/rooms', room, { context });
+  }
+
+  update$(id: string, room: IRoomRequest, context?: HttpContext): Observable<IRoom> {
+    return this.http.put<IRoom>(`/api/rooms/${id}`, room, { context });
   }
 
   delete$(id: string, context?: HttpContext): Observable<void> {

@@ -42,13 +42,15 @@ describe('RoomsAdminComponent', () => {
     await setup();
 
     const row = screen.getAllByRole('row')[1];
-    expect(Array.from(row.querySelectorAll('th, td'), (cell) => cell.textContent?.trim())).toEqual([
-      'Room A',
-      '50',
-      '2,000.00 UAH',
-      '1',
-      'Delete',
-    ]);
+    expect(
+      Array.from(row.querySelectorAll('th, td'), (cell) =>
+        cell.textContent?.replace(/\s+/g, ' ').trim(),
+      ),
+    ).toEqual(['Room A', '50', '2,000.00 UAH', '1', 'Edit Delete']);
+    expect(screen.getByRole('link', { name: 'Edit Room A' })).toHaveAttribute(
+      'href',
+      '/admin/rooms/a/edit',
+    );
   });
 
   it('deletes a room after asking, and reloads', async () => {

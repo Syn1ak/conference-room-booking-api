@@ -1,7 +1,12 @@
 <app-page-header
   title="Rooms"
   description="The rooms clients can book, their size and base rate, and the services each offers."
-/>
+>
+  <a app-button appPageActions routerLink="/admin/rooms/new">
+    <app-icon [icon]="icons.Plus" class="size-4" />
+    Add room
+  </a>
+</app-page-header>
 
 <section class="mt-8" aria-label="Rooms" [attr.aria-busy]="facade.$isLoading()">
   @if (facade.$isLoading()) {
@@ -24,6 +29,7 @@
         description="Rooms you add appear here and in the public catalogue."
       >
         <app-icon appEmptyIcon [icon]="icons.DoorClosed" class="size-6" />
+        <a app-button routerLink="/admin/rooms/new">Add room</a>
       </app-empty-state>
     </app-card>
   } @else {
@@ -52,6 +58,16 @@
                 {{ room.services.length }}
               </td>
               <td class="px-4 py-2 text-right whitespace-nowrap">
+                <a
+                  app-button
+                  variant="ghost"
+                  size="sm"
+                  [routerLink]="['/admin/rooms', room.id, 'edit']"
+                  [attr.aria-label]="'Edit ' + room.name"
+                >
+                  <app-icon [icon]="icons.Pencil" class="size-4" />
+                  Edit
+                </a>
                 <button
                   app-button
                   variant="ghost"

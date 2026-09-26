@@ -1,3 +1,4 @@
+using ConferenceRoomBooking.Api.Auth;
 using ConferenceRoomBooking.Api.Common;
 using ConferenceRoomBooking.Application.Rooms;
 using Microsoft.AspNetCore.Authorization;
@@ -37,5 +38,28 @@ public sealed class RoomsController(RoomService roomService) : ControllerBase
         var result = await roomService.GetAsync(id, cancellationToken);
 
         return result.IsSuccess ? Ok(RoomResponse.From(result.Value)) : this.ErrorResponse(result.Error);
+    }
+
+    /// <summary>
+    /// Adds a room that offers the given catalog services, each at its own price or the service's standard price.
+    /// </summary>
+    [HttpPost]
+    [Authorize(Policy = Policies.AdminOnly)]
+    [ProducesResponseType<RoomResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<RoomResponse>> Create(RoomRequest request, CancellationToken cancellationToken)
+    {
+        var result = await roomService.CreateAsync(request.ToDetails(), cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return this.ErrorResponse(result.Error);
+        }
+
+        var room = RoomResponse.From(result.Value);
+
+        return CreatedAtAction(nameof(Get), new { id = room.Id }, room);
     }
 }

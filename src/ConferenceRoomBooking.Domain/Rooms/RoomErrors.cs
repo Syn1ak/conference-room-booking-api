@@ -19,6 +19,9 @@ public static class RoomErrors
     public static readonly Error NotFound = Error.NotFound(
         "Room.NotFound", "The room doesn't exist.");
 
+    public static Error ServiceNotInCatalog(Guid serviceId) => FieldError(
+        "Room.ServiceNotInCatalog", "Services", $"The service {serviceId} isn't in the catalog.");
+
     public static readonly Error CapacityNotPositive = FieldError(
         "Room.CapacityNotPositive", nameof(Room.Capacity), "The capacity must be at least 1 person.");
 

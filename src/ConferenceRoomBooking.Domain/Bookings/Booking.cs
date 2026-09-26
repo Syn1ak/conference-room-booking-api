@@ -34,6 +34,13 @@ public sealed class Booking
         TotalPrice = price.TotalPrice;
     }
 
+    /// <summary>Used by EF Core, which sets the properties from the database.</summary>
+    private Booking()
+    {
+        Slot = null!;
+        _bookedServices = [];
+    }
+
     public Guid Id { get; }
 
     public Guid RoomId { get; }

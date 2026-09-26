@@ -1,6 +1,5 @@
 using ConferenceRoomBooking.Domain.Rooms;
 using ConferenceRoomBooking.Domain.Services;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoomBooking.IntegrationTests.Persistence;
@@ -8,9 +7,6 @@ namespace ConferenceRoomBooking.IntegrationTests.Persistence;
 [Collection(nameof(DatabaseCollection))]
 public sealed class CatalogMappingTests(DatabaseFixture database)
 {
-    private const int UniqueIndexViolation = 2601;
-    private const int ForeignKeyViolation = 547;
-
     [Fact]
     public async Task Service_IsReadBackAsSaved()
     {
@@ -79,7 +75,7 @@ public sealed class CatalogMappingTests(DatabaseFixture database)
         var exception = await Assert.ThrowsAsync<DbUpdateException>(
             () => SaveAsync(Room.Create(name.ToUpperInvariant(), 30, 1500m).Value));
 
-        Assert.Equal(UniqueIndexViolation, SqlErrorNumber(exception));
+        Assert.Equal(TestData.UniqueIndexViolation, TestData.SqlErrorNumber(exception));
     }
 
     [Fact]
@@ -91,7 +87,7 @@ public sealed class CatalogMappingTests(DatabaseFixture database)
         var exception = await Assert.ThrowsAsync<DbUpdateException>(
             () => SaveAsync(Service.Create(name.ToLowerInvariant(), 800m).Value));
 
-        Assert.Equal(UniqueIndexViolation, SqlErrorNumber(exception));
+        Assert.Equal(TestData.UniqueIndexViolation, TestData.SqlErrorNumber(exception));
     }
 
     [Fact]
@@ -106,7 +102,7 @@ public sealed class CatalogMappingTests(DatabaseFixture database)
         dbContext.Services.Remove(await dbContext.Services.SingleAsync(s => s.Id == projector.Id));
         var exception = await Assert.ThrowsAsync<DbUpdateException>(() => dbContext.SaveChangesAsync());
 
-        Assert.Equal(ForeignKeyViolation, SqlErrorNumber(exception));
+        Assert.Equal(TestData.ForeignKeyViolation, TestData.SqlErrorNumber(exception));
     }
 
     [Fact]
@@ -137,7 +133,4 @@ public sealed class CatalogMappingTests(DatabaseFixture database)
         dbContext.AddRange(entities);
         await dbContext.SaveChangesAsync();
     }
-
-    private static int? SqlErrorNumber(DbUpdateException exception) =>
-        (exception.InnerException as SqlException)?.Number;
 }

@@ -1,3 +1,117 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* Dark mode follows the data-theme attribute on <html>, which is set from the user's preference or the system. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px 0 rgb(24 24 27 / 0.04), 0 1px 3px 0 rgb(24 24 27 / 0.06);
+  --shadow-float: 0 12px 32px -8px rgb(24 24 27 / 0.18), 0 4px 8px -4px rgb(24 24 27 / 0.08);
+
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-pop-in: pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-in: slide-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.97);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+@theme inline {
+  /* The brand colour, used for primary actions, links, and focus. */
+  --color-brand-50: var(--color-indigo-50);
+  --color-brand-100: var(--color-indigo-100);
+  --color-brand-200: var(--color-indigo-200);
+  --color-brand-300: var(--color-indigo-300);
+  --color-brand-400: var(--color-indigo-400);
+  --color-brand-500: var(--color-indigo-500);
+  --color-brand-600: var(--color-indigo-600);
+  --color-brand-700: var(--color-indigo-700);
+  --color-brand-800: var(--color-indigo-800);
+  --color-brand-900: var(--color-indigo-900);
+  --color-brand-950: var(--color-indigo-950);
+
+  /* Surfaces and text that switch with the theme, so most markup needs no dark: variants. */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+
+  /* One colour per pricing band, the same in the timeline, the price breakdown, and the demand report. */
+  --color-band-morning: var(--color-amber-500);
+  --color-band-standard: var(--color-slate-400);
+  --color-band-peak: var(--color-rose-500);
+  --color-band-evening: var(--color-violet-500);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --canvas: var(--color-zinc-50);
+    --surface: var(--color-white);
+    --surface-muted: var(--color-zinc-100);
+    --line: var(--color-zinc-200);
+    --line-strong: var(--color-zinc-300);
+    --ink: var(--color-zinc-900);
+    --ink-muted: var(--color-zinc-600);
+    --ink-subtle: var(--color-zinc-500);
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --canvas: var(--color-zinc-950);
+    --surface: var(--color-zinc-900);
+    --surface-muted: var(--color-zinc-800);
+    --line: var(--color-zinc-800);
+    --line-strong: var(--color-zinc-700);
+    --ink: var(--color-zinc-50);
+    --ink-muted: var(--color-zinc-300);
+    --ink-subtle: var(--color-zinc-400);
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    /* Inter's alternate digits and a straight-legged l read better in prices and times. */
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-950;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

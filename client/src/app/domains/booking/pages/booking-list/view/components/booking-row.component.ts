@@ -1,31 +1,29 @@
 import { Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Clock, Users } from 'lucide';
-import {
-  BadgeComponent,
-  TBadgeTone,
-} from '../../../../../../shared/ui/components/badge/badge.component';
 import { IconComponent } from '../../../../../../shared/ui/components/icon/icon.component';
 import { DurationPipe } from '../../../../../../shared/ui/pipes/duration.pipe';
 import { UahPipe } from '../../../../../../shared/ui/pipes/uah.pipe';
 import { WallDatePipe } from '../../../../../../shared/ui/pipes/wall-date.pipe';
 import { WallRangePipe } from '../../../../../../shared/ui/pipes/wall-range.pipe';
+import { BookingStatusBadgeComponent } from '../../../../view/components/booking-status-badge.component';
 import { TBookingRow } from '../../data-access/booking-list.facade';
-import { TBookingState } from '../../utils/booking-state.util';
-
-const STATES: Record<TBookingState, { label: string; tone: TBadgeTone }> = {
-  upcoming: { label: 'Upcoming', tone: 'brand' },
-  'in-progress': { label: 'In progress', tone: 'success' },
-  completed: { label: 'Completed', tone: 'neutral' },
-  cancelled: { label: 'Cancelled', tone: 'danger' },
-};
 
 /**
- * One booking in the list: a calendar tile for its date, the room and time, its status, and what it costs. Project
- * actions, such as cancelling, into it.
+ * One booking in the list: a calendar tile for its date, the room and time, its status, and what it costs. The room
+ * name links to the booking's details. Project actions, such as cancelling, into it.
  */
 @Component({
   selector: 'app-booking-row',
-  imports: [BadgeComponent, DurationPipe, IconComponent, UahPipe, WallDatePipe, WallRangePipe],
+  imports: [
+    RouterLink,
+    BookingStatusBadgeComponent,
+    DurationPipe,
+    IconComponent,
+    UahPipe,
+    WallDatePipe,
+    WallRangePipe,
+  ],
   template: `
     <div
       class="flex size-14 shrink-0 flex-col items-center justify-center rounded-xl ring-1"
@@ -50,9 +48,13 @@ const STATES: Record<TBookingState, { label: string; tone: TBadgeTone }> = {
           class="truncate font-semibold text-ink"
           [class.line-through]="$row().state === 'cancelled'"
         >
-          {{ $row().roomName }}
+          <a
+            class="rounded hover:text-brand-600 dark:hover:text-brand-400"
+            [routerLink]="['/bookings', $row().booking.id]"
+            >{{ $row().roomName }}</a
+          >
         </h3>
-        <app-badge [tone]="$status().tone">{{ $status().label }}</app-badge>
+        <app-booking-status-badge [state]="$row().state" />
       </div>
       <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
         <span>{{ $row().booking.start | wallDate }}</span>
@@ -91,7 +93,6 @@ export class BookingRowComponent {
   readonly $row = input.required<TBookingRow>({ alias: 'row' });
   readonly $showClient = input(false, { alias: 'showClient' });
 
-  protected readonly $status = computed(() => STATES[this.$row().state]);
   protected readonly $isInactive = computed(() => {
     const state = this.$row().state;
 

@@ -1,5 +1,5 @@
-import { IBooking } from '../../../../../core/entities/bookings/booking.dto';
-import { bookingState, parsePage } from './booking-state.util';
+import { IBooking } from '../../../core/entities/bookings/booking.dto';
+import { bookingState } from './booking-state.util';
 
 describe('bookingState', () => {
   const booking = (overrides: Partial<IBooking> = {}) =>
@@ -23,18 +23,5 @@ describe('bookingState', () => {
     expect(bookingState(booking({ status: 'Cancelled' }), new Date('2026-01-01T00:00:00Z'))).toBe(
       'cancelled',
     );
-  });
-});
-
-describe('parsePage', () => {
-  it.each([
-    ['3', 3],
-    [undefined, 1],
-    ['0', 1],
-    ['-2', 1],
-    ['1.5', 1],
-    ['two', 1],
-  ])('reads %s as page %i', (value, expected) => {
-    expect(parsePage(value)).toBe(expected);
   });
 });

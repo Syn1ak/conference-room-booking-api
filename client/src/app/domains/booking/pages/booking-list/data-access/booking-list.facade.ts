@@ -2,7 +2,7 @@ import { computed, inject, Injectable, Signal } from '@angular/core';
 import { IBooking } from '../../../../../core/entities/bookings/booking.dto';
 import { BookingsClient } from '../../../../../core/services/api/bookings/bookings.client';
 import { RoomsClient } from '../../../../../core/services/api/rooms/rooms.client';
-import { bookingState, TBookingState } from '../utils/booking-state.util';
+import { bookingState, TBookingState } from '../../../utils/booking-state.util';
 
 export const BOOKINGS_PAGE_SIZE = 10;
 

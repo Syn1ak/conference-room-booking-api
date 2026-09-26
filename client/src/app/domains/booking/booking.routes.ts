@@ -14,4 +14,10 @@ export const ROUTES: Route[] = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/booking-list/booking-list.component'),
   },
+  {
+    path: 'bookings/:id',
+    title: 'Booking',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/booking-details/booking-details.component'),
+  },
 ];

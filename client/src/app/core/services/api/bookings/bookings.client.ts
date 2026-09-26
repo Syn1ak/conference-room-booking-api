@@ -21,6 +21,11 @@ export class BookingsClient {
     return this.http.post<IBookingConfirmation>('/api/bookings', request, { context });
   }
 
+  /** One booking, if the caller may see it: their own, or any for an admin. Anything else is a 404. */
+  bookingResource($id: Signal<string>): HttpResourceRef<IBooking | undefined> {
+    return httpResource<IBooking>(() => `/api/bookings/${encodeURIComponent($id())}`);
+  }
+
   /** Cancels one of the signed-in client's bookings before it starts. */
   cancel$(id: string, context?: HttpContext): Observable<IBooking> {
     return this.http.post<IBooking>(`/api/bookings/${id}/cancel`, null, { context });

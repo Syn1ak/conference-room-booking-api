@@ -13,7 +13,7 @@ import { PageHeaderComponent } from '../../../../shared/ui/components/page-heade
 import { SkeletonComponent } from '../../../../shared/ui/components/skeleton/skeleton.component';
 import { CancelBookingService } from '../../data-access/cancel-booking.service';
 import { BookingListFacade, TBookingRow } from './data-access/booking-list.facade';
-import { parsePage } from './utils/booking-state.util';
+import { parsePage } from './utils/page.util';
 import { BookingRowComponent } from './view/components/booking-row.component';
 
 /**

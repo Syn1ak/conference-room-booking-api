@@ -21,6 +21,10 @@ export const routes: Routes = [
         loadChildren: () => import('./domains/catalog/catalog.routes').then((r) => r.ROUTES),
       },
       {
+        path: '',
+        loadChildren: () => import('./domains/reports/reports.routes').then((r) => r.ROUTES),
+      },
+      {
         path: 'no-access',
         title: 'No access',
         loadComponent: () => import('./domains/system/pages/no-access/no-access.component'),

@@ -1,0 +1,12 @@
+<app-page-header
+  title="Reports"
+  description="How the rooms earn and fill, by booking date in venue time. Confirmed bookings count; cancelled ones show as cancellations."
+/>
+
+<app-card class="mt-8">
+  <app-period-picker [period]="$period()" [today]="today" (periodChange)="showPeriod($event)" />
+  <p class="mt-4 text-sm text-ink-muted" aria-live="polite">
+    {{ $period().from | wallDate: 'long' }} – {{ $period().to | wallDate: 'long' }} · {{ $days() }}
+    {{ $days() === 1 ? 'day' : 'days' }}
+  </p>
+</app-card>

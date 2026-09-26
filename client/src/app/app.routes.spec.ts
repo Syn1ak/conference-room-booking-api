@@ -34,6 +34,11 @@ describe('app routes', () => {
     ['/login', 'Sign in'],
     ['/register', 'Create account'],
     ['/rooms', 'Rooms'],
+    // Signed-out visitors are sent to sign in first.
+    ['/admin/rooms', 'Sign in'],
+    ['/admin/services', 'Sign in'],
+    ['/admin/reports', 'Sign in'],
+    ['/bookings', 'Sign in'],
     ['/no-access', 'No access'],
     ['/nowhere', 'Page not found'],
   ])('opens %s as "%s"', async (url, title) => {

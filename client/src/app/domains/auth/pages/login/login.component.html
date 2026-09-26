@@ -1,0 +1,44 @@
+<app-auth-card title="Welcome back" subtitle="Sign in to book rooms and manage your bookings.">
+  <form class="flex flex-col gap-5" [formRoot]="loginForm">
+    @if ($formErrors().length > 0) {
+      <app-alert tone="danger">
+        @for (message of $formErrors(); track message) {
+          <p>{{ message }}</p>
+        }
+      </app-alert>
+    }
+
+    <app-form-field label="Email" [field]="loginForm.email">
+      <input appInput type="email" autocomplete="username" [formField]="loginForm.email" />
+    </app-form-field>
+
+    <app-form-field label="Password" [field]="loginForm.password">
+      <app-password-input autocomplete="current-password" [field]="loginForm.password" />
+    </app-form-field>
+
+    <button
+      app-button
+      type="submit"
+      size="lg"
+      class="w-full"
+      [loading]="loginForm().submitting()"
+      [disabled]="cooldown.$secondsLeft() > 0"
+    >
+      @if (cooldown.$secondsLeft() > 0) {
+        Try again in {{ cooldown.$secondsLeft() }} s
+      } @else {
+        Sign in
+      }
+    </button>
+  </form>
+
+  <ng-container appAuthFooter>
+    New here?
+    <a
+      routerLink="/register"
+      [queryParams]="{ returnUrl: $safeReturnUrl() }"
+      class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400"
+      >Create an account</a
+    >
+  </ng-container>
+</app-auth-card>

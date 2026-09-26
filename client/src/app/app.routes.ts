@@ -7,6 +7,10 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     children: [
       {
+        path: '',
+        loadChildren: () => import('./domains/auth/auth.routes').then((r) => r.ROUTES),
+      },
+      {
         path: 'no-access',
         title: 'No access',
         loadComponent: () => import('./domains/system/pages/no-access/no-access.component'),

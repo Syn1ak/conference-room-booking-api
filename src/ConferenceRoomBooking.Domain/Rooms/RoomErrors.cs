@@ -19,6 +19,9 @@ public static class RoomErrors
     public static readonly Error NotFound = Error.NotFound(
         "Room.NotFound", "The room doesn't exist.");
 
+    public static readonly Error HasBookings = Error.Conflict(
+        "Room.HasBookings", "A room that has been booked can't be deleted, only edited.");
+
     public static Error ServiceNotInCatalog(Guid serviceId) => FieldError(
         "Room.ServiceNotInCatalog", "Services", $"The service {serviceId} isn't in the catalog.");
 

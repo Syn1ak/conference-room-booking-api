@@ -1,3 +1,4 @@
+using ConferenceRoomBooking.Application.Bookings;
 using ConferenceRoomBooking.Application.Common;
 using ConferenceRoomBooking.Application.Services;
 using ConferenceRoomBooking.Domain.Common;
@@ -9,7 +10,11 @@ namespace ConferenceRoomBooking.Application.Rooms;
 /// <summary>
 /// Use cases for conference rooms and the services they offer.
 /// </summary>
-public sealed class RoomService(IRoomRepository rooms, IServiceRepository services, IUnitOfWork unitOfWork)
+public sealed class RoomService(
+    IRoomRepository rooms,
+    IServiceRepository services,
+    IRoomBookingLock roomBookingLock,
+    IUnitOfWork unitOfWork)
 {
     public Task<IReadOnlyList<Room>> ListAsync(CancellationToken cancellationToken) =>
         rooms.ListAsync(cancellationToken);
@@ -73,6 +78,35 @@ public sealed class RoomService(IRoomRepository rooms, IServiceRepository servic
         }
 
         return await SaveAsync(room, cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes a room that has never been booked, together with its offerings.
+    /// </summary>
+    public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    {
+        // Holding the room's booking lock keeps a booking from being made between the check and the delete.
+        var deleted = await roomBookingLock.RunExclusiveAsync<Guid>(
+            id,
+            async token =>
+            {
+                if (await rooms.GetByIdAsync(id, token) is not { } room)
+                {
+                    return RoomErrors.NotFound;
+                }
+
+                if (await rooms.HasBookingsAsync(id, token))
+                {
+                    return RoomErrors.HasBookings;
+                }
+
+                rooms.Remove(room);
+                var saved = await unitOfWork.SaveChangesAsync(token);
+                return saved.IsSuccess ? id : saved.Error;
+            },
+            cancellationToken);
+
+        return deleted.IsSuccess ? Result.Success : deleted.Error;
     }
 
     private async Task<Result> ReplaceOfferingsAsync(

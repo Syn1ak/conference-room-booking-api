@@ -81,4 +81,22 @@ public sealed class RoomsController(RoomService roomService) : ControllerBase
 
         return result.IsSuccess ? Ok(RoomResponse.From(result.Value)) : this.ErrorResponse(result.Error);
     }
+
+    /// <summary>
+    /// Deletes a room and the services it offers. Refused for a room that has any bookings, including past and
+    /// cancelled ones; such a room can still be edited.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = Policies.AdminOnly)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await roomService.DeleteAsync(id, cancellationToken);
+
+        return result.IsSuccess ? NoContent() : this.ErrorResponse(result.Error);
+    }
 }

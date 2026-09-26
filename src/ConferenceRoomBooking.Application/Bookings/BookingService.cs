@@ -5,6 +5,7 @@ using ConferenceRoomBooking.Domain.Bookings;
 using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Domain.Pricing;
 using ConferenceRoomBooking.Domain.Rooms;
+using Microsoft.Extensions.Logging;
 
 namespace ConferenceRoomBooking.Application.Bookings;
 
@@ -19,14 +20,16 @@ public sealed class BookingService(
     IUnitOfWork unitOfWork,
     ICurrentUser currentUser,
     VenueTimeZone venueTimeZone,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ILogger<BookingService> logger)
 {
     /// <summary>
     /// Books a room for the current user and prices the booking. Fails with a conflict if a confirmed booking of the
     /// room overlaps the time; the room's lock makes that check safe against concurrent requests.
     /// </summary>
-    public Task<Result<BookingConfirmation>> CreateAsync(NewBooking request, CancellationToken cancellationToken) =>
-        roomBookingLock.RunExclusiveAsync<BookingConfirmation>(
+    public async Task<Result<BookingConfirmation>> CreateAsync(NewBooking request, CancellationToken cancellationToken)
+    {
+        var result = await roomBookingLock.RunExclusiveAsync<BookingConfirmation>(
             request.RoomId,
             async token =>
             {
@@ -66,6 +69,18 @@ public sealed class BookingService(
             },
             cancellationToken);
 
+        // Logged once the lock's transaction has committed, so a retried attempt doesn't log a booking twice.
+        if (result.IsSuccess)
+        {
+            var booking = result.Value.Booking;
+            logger.LogInformation(
+                "Booking {BookingId} of room {RoomId} created by client {ClientId} for {Start} to {End}",
+                booking.Id, booking.RoomId, booking.ClientId, booking.Slot.Start, booking.Slot.End);
+        }
+
+        return result;
+    }
+
     /// <summary>
     /// Returns a booking the current user may see. Another client's booking is reported as not found, so its
     /// existence isn't revealed.
@@ -101,7 +116,13 @@ public sealed class BookingService(
         }
 
         var saved = await unitOfWork.SaveChangesAsync(cancellationToken);
-        return saved.IsSuccess ? booking : saved.Error;
+        if (!saved.IsSuccess)
+        {
+            return saved.Error;
+        }
+
+        logger.LogInformation("Booking {BookingId} cancelled by client {ClientId}", booking.Id, booking.ClientId);
+        return booking;
     }
 
     private bool IsAdmin => currentUser.Roles.Contains(Roles.Admin);

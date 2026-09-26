@@ -3,13 +3,17 @@ using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ConferenceRoomBooking.Infrastructure.Identity;
 
 /// <summary>
 /// <see cref="IIdentityService"/> implemented with ASP.NET Core Identity.
 /// </summary>
-public sealed class IdentityService(UserManager<ApplicationUser> userManager, ApplicationDbContext dbContext) : IIdentityService
+public sealed class IdentityService(
+    UserManager<ApplicationUser> userManager,
+    ApplicationDbContext dbContext,
+    ILogger<IdentityService> logger) : IIdentityService
 {
     private static readonly string[] DuplicateAccountErrorCodes =
     [
@@ -77,6 +81,11 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager, Ap
         {
             // Counts towards lockout; the account locks after the configured number of failures.
             await userManager.AccessFailedAsync(user);
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                logger.LogWarning("Account {UserId} locked out after repeated failed logins", user.Id);
+            }
+
             return AuthErrors.InvalidCredentials;
         }
 

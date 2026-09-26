@@ -78,4 +78,24 @@ public sealed class BookingsController(BookingService bookingService, VenueTimeZ
             ? Ok(BookingResponse.From(result.Value, venueTimeZone.TimeZone))
             : this.ErrorResponse(result.Error);
     }
+
+    /// <summary>
+    /// Cancels one of the signed-in client's bookings before it starts, which frees its time slot. The booking is
+    /// kept, with its status set to Cancelled.
+    /// </summary>
+    [HttpPost("{id:guid}/cancel")]
+    [Authorize(Policy = Policies.ClientOnly)]
+    [ProducesResponseType<BookingResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<BookingResponse>> Cancel(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await bookingService.CancelAsync(id, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(BookingResponse.From(result.Value, venueTimeZone.TimeZone))
+            : this.ErrorResponse(result.Error);
+    }
 }

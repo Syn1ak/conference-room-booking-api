@@ -1,4 +1,5 @@
 using ConferenceRoomBooking.Domain.Bookings;
+using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Domain.Rooms;
 
 namespace ConferenceRoomBooking.UnitTests.Domain.Bookings;
@@ -73,5 +74,12 @@ public sealed class BookingCancellationTests
 
         Assert.Equal(BookingErrors.AlreadyCancelled, result.Error);
         Assert.Equal(firstCancellation, _booking.CancelledAt);
+    }
+
+    [Fact]
+    public void CancellationFailures_AreConflictsWithTheBookingsState()
+    {
+        Assert.Equal(ErrorType.Conflict, BookingErrors.AlreadyCancelled.Type);
+        Assert.Equal(ErrorType.Conflict, BookingErrors.AlreadyStarted.Type);
     }
 }

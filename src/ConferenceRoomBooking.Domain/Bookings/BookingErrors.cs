@@ -51,11 +51,12 @@ public static class BookingErrors
         "Booking.SlotTaken",
         "The room is already booked for some or all of this time.");
 
-    public static readonly Error AlreadyCancelled = Error.Validation(
+    // Cancelling is refused because of the booking's current state, not because the request is malformed.
+    public static readonly Error AlreadyCancelled = Error.Conflict(
         "Booking.AlreadyCancelled",
         "The booking is already cancelled.");
 
-    public static readonly Error AlreadyStarted = Error.Validation(
+    public static readonly Error AlreadyStarted = Error.Conflict(
         "Booking.AlreadyStarted",
         "A booking can't be cancelled once it has started.");
 

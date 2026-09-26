@@ -28,6 +28,9 @@ public sealed class SqlServerRoomBookingLock(ApplicationDbContext dbContext) : I
         return strategy.ExecuteAsync(
             async token =>
             {
+                // Entities a failed attempt added are still tracked; without this, a retry would save them again.
+                dbContext.ChangeTracker.Clear();
+
                 await using var transaction = await dbContext.Database.BeginTransactionAsync(token);
                 await AcquireAsync(roomId, token);
 
@@ -67,7 +70,9 @@ public sealed class SqlServerRoomBookingLock(ApplicationDbContext dbContext) : I
         var code = (int)returnCode.Value;
         if (code == TimedOut)
         {
-            throw new TimeoutException(
+            // Not a TimeoutException: database retries treat that as transient, and retrying a lock that stayed held
+            // this long would keep the request waiting for minutes.
+            throw new InvalidOperationException(
                 $"Room {roomId} stayed locked by another booking for more than {LockTimeout.TotalSeconds:0} seconds.");
         }
 

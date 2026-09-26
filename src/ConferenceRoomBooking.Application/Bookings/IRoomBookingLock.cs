@@ -12,7 +12,7 @@ public interface IRoomBookingLock
     /// Runs <paramref name="action"/> while holding the room's lock, in one database transaction shared with the
     /// repositories and <see cref="Common.IUnitOfWork"/>. The transaction is committed if the action succeeds and
     /// rolled back if it returns a failure. The action may run again after a transient database failure, so it
-    /// should do all of its reads and writes itself.
+    /// should do all of its reads and writes itself: each run starts with nothing loaded or tracked.
     /// </summary>
     Task<Result<TValue>> RunExclusiveAsync<TValue>(
         Guid roomId,

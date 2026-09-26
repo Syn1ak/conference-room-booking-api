@@ -2,6 +2,7 @@ using ConferenceRoomBooking.Application.Auth;
 using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoomBooking.Infrastructure.Identity;
 
@@ -23,27 +24,37 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager, Ap
             return AuthErrors.EmailAlreadyRegistered;
         }
 
-        var user = new ApplicationUser { UserName = email, Email = email };
+        // Creating the user and assigning the role must succeed or fail together. A transaction we open ourselves must
+        // run inside the execution strategy, so that database retries repeat the whole unit instead of failing.
+        var strategy = dbContext.Database.CreateExecutionStrategy();
 
-        // Creating the user and assigning the role must succeed or fail together.
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        return await strategy.ExecuteAsync<Result<Guid>>(
+            async token =>
+            {
+                // A failed attempt's user is still tracked; without this, a retry would insert it again.
+                dbContext.ChangeTracker.Clear();
 
-        var createResult = await userManager.CreateAsync(user, password);
-        if (!createResult.Succeeded)
-        {
-            return ToError(createResult.Errors);
-        }
+                await using var transaction = await dbContext.Database.BeginTransactionAsync(token);
 
-        var roleResult = await userManager.AddToRoleAsync(user, role);
-        if (!roleResult.Succeeded)
-        {
-            throw new InvalidOperationException(
-                $"Failed to assign role '{role}': {string.Join(" ", roleResult.Errors.Select(error => error.Description))}");
-        }
+                var user = new ApplicationUser { UserName = email, Email = email };
+                var createResult = await userManager.CreateAsync(user, password);
+                if (!createResult.Succeeded)
+                {
+                    return ToError(createResult.Errors);
+                }
 
-        await transaction.CommitAsync(cancellationToken);
+                var roleResult = await userManager.AddToRoleAsync(user, role);
+                if (!roleResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to assign role '{role}': {string.Join(" ", roleResult.Errors.Select(error => error.Description))}");
+                }
 
-        return user.Id;
+                await transaction.CommitAsync(token);
+
+                return user.Id;
+            },
+            cancellationToken);
     }
 
     public async Task<Result<UserAccount>> CheckCredentialsAsync(string email, string password)

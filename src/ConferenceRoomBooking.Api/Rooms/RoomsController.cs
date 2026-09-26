@@ -41,6 +41,26 @@ public sealed class RoomsController(RoomService roomService) : ControllerBase
     }
 
     /// <summary>
+    /// Finds the rooms that hold at least the given number of people and are free for the whole time, each with its
+    /// rental price for that time. The time must be bookable: in the future, within opening hours (06:00–23:00 venue
+    /// time) on one day, on a 15-minute step, and at least 30 minutes long.
+    /// </summary>
+    [HttpGet("available")]
+    [AllowAnonymous]
+    [ProducesResponseType<IReadOnlyList<AvailableRoomResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<IReadOnlyList<AvailableRoomResponse>>> FindAvailable(
+        [FromQuery] AvailableRoomsQuery query, CancellationToken cancellationToken)
+    {
+        var result = await roomService.FindAvailableAsync(
+            query.Start!.Value, query.End!.Value, query.Capacity!.Value, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value.Select(AvailableRoomResponse.From).ToList())
+            : this.ErrorResponse(result.Error);
+    }
+
+    /// <summary>
     /// Adds a room that offers the given catalog services, each at its own price or the service's standard price.
     /// </summary>
     [HttpPost]

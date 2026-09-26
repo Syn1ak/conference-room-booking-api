@@ -1,6 +1,8 @@
 using ConferenceRoomBooking.Api.Auth;
+using ConferenceRoomBooking.Api.Common;
 using ConferenceRoomBooking.Api.OpenApi;
 using ConferenceRoomBooking.Api.RateLimiting;
+using ConferenceRoomBooking.Api.Venue;
 using ConferenceRoomBooking.Application;
 using ConferenceRoomBooking.Infrastructure;
 using ConferenceRoomBooking.Infrastructure.Identity;
@@ -15,8 +17,13 @@ builder.Services.AddJwtAuthentication();
 builder.Services.AddCurrentUser();
 builder.Services.AddAuthorizationPolicies();
 builder.Services.AddApiRateLimiting(builder.Configuration);
+builder.Services.AddVenueTimeZone(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    // Times in the query string must carry a UTC offset (ADR 0003).
+    options.ModelBinderProviders.Insert(0, new OffsetRequiredDateTimeOffsetBinderProvider());
+});
 builder.Services.AddApiDocumentation();
 
 // Every error response, including unhandled exceptions and bare status codes, is RFC 7807 ProblemDetails with a trace id.

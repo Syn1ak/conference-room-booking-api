@@ -1,7 +1,9 @@
 using ConferenceRoomBooking.Application.Bookings;
 using ConferenceRoomBooking.Application.Common;
 using ConferenceRoomBooking.Application.Services;
+using ConferenceRoomBooking.Domain.Bookings;
 using ConferenceRoomBooking.Domain.Common;
+using ConferenceRoomBooking.Domain.Pricing;
 using ConferenceRoomBooking.Domain.Rooms;
 using ConferenceRoomBooking.Domain.Services;
 
@@ -14,13 +16,38 @@ public sealed class RoomService(
     IRoomRepository rooms,
     IServiceRepository services,
     IRoomBookingLock roomBookingLock,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    VenueTimeZone venueTimeZone,
+    TimeProvider timeProvider)
 {
     public Task<IReadOnlyList<Room>> ListAsync(CancellationToken cancellationToken) =>
         rooms.ListAsync(cancellationToken);
 
     public async Task<Result<Room>> GetAsync(Guid id, CancellationToken cancellationToken) =>
         await rooms.GetByIdAsync(id, cancellationToken) is { } room ? room : RoomErrors.NotFound;
+
+    /// <summary>
+    /// Finds the rooms that hold at least <paramref name="capacity"/> people and are free from
+    /// <paramref name="start"/> to <paramref name="end"/>, each with its rental price for that time.
+    /// The slot must be bookable, so every room found can actually be booked for it.
+    /// </summary>
+    public async Task<Result<IReadOnlyList<AvailableRoom>>> FindAvailableAsync(
+        DateTimeOffset start, DateTimeOffset end, int capacity, CancellationToken cancellationToken)
+    {
+        var slot = BookingSlot.Create(start, end, timeProvider.GetUtcNow(), venueTimeZone.TimeZone);
+        if (!slot.IsSuccess)
+        {
+            return slot.Error;
+        }
+
+        var availableRooms = await rooms.FindAvailableAsync(slot.Value, capacity, cancellationToken);
+
+        return availableRooms
+            .Select(room => new AvailableRoom(
+                room,
+                PriceCalculator.Calculate(slot.Value, room.HourlyPrice, [], venueTimeZone.TimeZone).RentalPrice))
+            .ToList();
+    }
 
     /// <summary>
     /// Adds a room that offers the given catalog services.

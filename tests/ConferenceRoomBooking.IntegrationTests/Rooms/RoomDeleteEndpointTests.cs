@@ -1,21 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
-using ConferenceRoomBooking.Api.Auth;
 using ConferenceRoomBooking.Api.Rooms;
 using ConferenceRoomBooking.Api.Services;
-using ConferenceRoomBooking.Domain.Bookings;
-using ConferenceRoomBooking.Infrastructure.Persistence;
 using ConferenceRoomBooking.Infrastructure.Persistence.Seeding;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace ConferenceRoomBooking.IntegrationTests.Rooms;
 
 [Collection(nameof(ApiCollection))]
 public sealed class RoomDeleteEndpointTests(ApiFactory factory)
 {
-    private static readonly TimeZoneInfo Kyiv = TimeZoneInfo.FindSystemTimeZoneById("Europe/Kyiv");
-
     private readonly HttpClient _anonymous = factory.CreateClient();
 
     [Fact]
@@ -39,7 +32,8 @@ public sealed class RoomDeleteEndpointTests(ApiFactory factory)
     {
         var admin = await factory.LoginAsAdminAsync();
         var room = await CreateRoomAsync(admin);
-        await SaveCancelledBookingAsync(room.Id);
+        var day = VenueTime.UniqueDay();
+        await factory.SaveBookingAsync(room.Id, VenueTime.At(day, 10), VenueTime.At(day, 11), cancelled: true);
 
         var response = await admin.DeleteAsync($"/api/rooms/{room.Id}");
 
@@ -80,26 +74,5 @@ public sealed class RoomDeleteEndpointTests(ApiFactory factory)
                 [new OfferedServiceRequest(serviceId ?? InitialCatalog.Projector.Id, null)]));
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<RoomResponse>())!;
-    }
-
-    // Bookings can't be made through the API in this test's setup, so it saves one directly.
-    private async Task SaveCancelledBookingAsync(Guid roomId)
-    {
-        var client = await factory.LoginAsNewClientAsync();
-        var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
-
-        using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var room = await dbContext.Rooms.Include(r => r.Offerings).SingleAsync(r => r.Id == roomId);
-
-        var now = DateTimeOffset.UtcNow;
-        var localStart = TimeZoneInfo.ConvertTime(now, Kyiv).Date.AddDays(7).AddHours(10);
-        var start = new DateTimeOffset(localStart, Kyiv.GetUtcOffset(localStart));
-        var slot = BookingSlot.Create(start, start.AddHours(1), now, Kyiv).Value;
-        var booking = Booking.Create(room, me!.UserId, slot, 5, [], Kyiv).Value;
-        booking.Cancel(now);
-
-        dbContext.Bookings.Add(booking);
-        await dbContext.SaveChangesAsync();
     }
 }

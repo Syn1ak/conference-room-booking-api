@@ -23,8 +23,9 @@ module.exports = defineConfig([
         { selector: 'typeAlias', format: ['PascalCase'], prefix: ['T'] },
         { selector: 'enum', format: ['PascalCase'] },
       ],
-      // Signal inputs are named $name and aliased to name, so templates bind [name] (our signal naming convention).
+      // Signal inputs and outputs are named $name and aliased to name, so templates bind [name] and (name).
       '@angular-eslint/no-input-rename': 'off',
+      '@angular-eslint/no-output-rename': 'off',
       '@angular-eslint/prefer-signals': 'error',
       '@angular-eslint/prefer-output-readonly': 'error',
       '@angular-eslint/directive-selector': [

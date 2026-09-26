@@ -55,4 +55,21 @@ public sealed class ReportsController(ReportService reportService) : ControllerB
 
         return result.IsSuccess ? Ok(OccupancyReportResponse.From(result.Value)) : this.ErrorResponse(result.Error);
     }
+
+    /// <summary>
+    /// Demand by time band: the hours of confirmed bookings in each band (Morning, Standard, Peak, Evening) against
+    /// the hours the rooms could have been booked in it, over the whole period and for each weekday. Shows whether
+    /// the band discounts and surcharges match demand.
+    /// </summary>
+    /// <param name="period">The days the report covers.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    [HttpGet("demand")]
+    [ProducesResponseType<DemandReportResponse>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<DemandReportResponse>> Demand(
+        [FromQuery] ReportPeriodQuery period, CancellationToken cancellationToken)
+    {
+        var result = await reportService.GetDemandAsync(period.From!.Value, period.To!.Value, cancellationToken);
+
+        return result.IsSuccess ? Ok(DemandReportResponse.From(result.Value)) : this.ErrorResponse(result.Error);
+    }
 }

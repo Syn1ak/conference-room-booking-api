@@ -35,6 +35,14 @@ public sealed class ReportService(
             async (period, bookings) => OccupancyReport.Build(period, bookings, await rooms.ListAsync(cancellationToken)),
             cancellationToken);
 
+    public Task<Result<DemandReport>> GetDemandAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken) =>
+        BuildAsync(
+            from,
+            to,
+            async (period, bookings) => DemandReport.Build(
+                period, bookings, (await rooms.ListAsync(cancellationToken)).Count, venueTimeZone.TimeZone),
+            cancellationToken);
+
     private async Task<Result<TReport>> BuildAsync<TReport>(
         DateOnly from,
         DateOnly to,

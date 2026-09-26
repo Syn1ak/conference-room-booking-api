@@ -2,6 +2,7 @@ using ConferenceRoomBooking.Application.Common;
 using ConferenceRoomBooking.Application.Services;
 using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Domain.Rooms;
+using ConferenceRoomBooking.Domain.Services;
 
 namespace ConferenceRoomBooking.Application.Rooms;
 
@@ -28,7 +29,7 @@ public sealed class RoomService(IRoomRepository rooms, IServiceRepository servic
         }
 
         var room = created.Value;
-        var offered = await OfferServicesAsync(room, details.Services, cancellationToken);
+        var offered = await ReplaceOfferingsAsync(room, details.Services, cancellationToken);
         if (!offered.IsSuccess)
         {
             return offered.Error;
@@ -40,17 +41,48 @@ public sealed class RoomService(IRoomRepository rooms, IServiceRepository servic
         }
 
         rooms.Add(room);
-        var saved = await unitOfWork.SaveChangesAsync(cancellationToken);
-        return saved.IsSuccess ? room : saved.Error;
+        return await SaveAsync(room, cancellationToken);
     }
 
-    private async Task<Result> OfferServicesAsync(
+    /// <summary>
+    /// Replaces everything about a room with <paramref name="details"/>, including the services it offers.
+    /// Existing bookings keep the prices they were made with.
+    /// </summary>
+    public async Task<Result<Room>> UpdateAsync(Guid id, RoomDetails details, CancellationToken cancellationToken)
+    {
+        if (await rooms.GetByIdAsync(id, cancellationToken) is not { } room)
+        {
+            return RoomErrors.NotFound;
+        }
+
+        var updated = room.Update(details.Name, details.Capacity, details.HourlyPrice);
+        if (!updated.IsSuccess)
+        {
+            return updated.Error;
+        }
+
+        var offered = await ReplaceOfferingsAsync(room, details.Services, cancellationToken);
+        if (!offered.IsSuccess)
+        {
+            return offered.Error;
+        }
+
+        if (await rooms.NameExistsAsync(room.Name, exceptId: room.Id, cancellationToken))
+        {
+            return RoomErrors.NameTaken;
+        }
+
+        return await SaveAsync(room, cancellationToken);
+    }
+
+    private async Task<Result> ReplaceOfferingsAsync(
         Room room, IReadOnlyList<OfferedService> offeredServices, CancellationToken cancellationToken)
     {
         var serviceIds = offeredServices.Select(offered => offered.ServiceId).Distinct().ToList();
         var catalogServices = (await services.GetByIdsAsync(serviceIds, cancellationToken))
             .ToDictionary(service => service.Id);
 
+        var offerings = new List<(Service Service, decimal? Price)>(offeredServices.Count);
         foreach (var offered in offeredServices)
         {
             if (!catalogServices.TryGetValue(offered.ServiceId, out var service))
@@ -58,13 +90,15 @@ public sealed class RoomService(IRoomRepository rooms, IServiceRepository servic
                 return RoomErrors.ServiceNotInCatalog(offered.ServiceId);
             }
 
-            var result = room.OfferService(service, offered.Price);
-            if (!result.IsSuccess)
-            {
-                return result;
-            }
+            offerings.Add((service, offered.Price));
         }
 
-        return Result.Success;
+        return room.ReplaceOfferings(offerings);
+    }
+
+    private async Task<Result<Room>> SaveAsync(Room room, CancellationToken cancellationToken)
+    {
+        var saved = await unitOfWork.SaveChangesAsync(cancellationToken);
+        return saved.IsSuccess ? room : saved.Error;
     }
 }

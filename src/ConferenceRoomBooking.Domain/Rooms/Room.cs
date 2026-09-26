@@ -104,6 +104,45 @@ public sealed class Room
         return Result.Success;
     }
 
+    /// <summary>
+    /// Makes the room offer exactly these services: new ones are added, ones it already offers get the given price,
+    /// and ones left out stop being offered. A missing price means the service's standard price.
+    /// If any service is invalid, nothing changes.
+    /// </summary>
+    public Result ReplaceOfferings(IReadOnlyCollection<(Service Service, decimal? Price)> offerings)
+    {
+        if (offerings.DistinctBy(offering => offering.Service.Id).Count() != offerings.Count)
+        {
+            return RoomErrors.ServiceListedTwice;
+        }
+
+        var wanted = offerings
+            .Select(offering => (offering.Service, Price: offering.Price ?? offering.Service.StandardPrice))
+            .ToList();
+        foreach (var (_, price) in wanted)
+        {
+            if (ValidateServicePrice(price) is { } error)
+            {
+                return error;
+            }
+        }
+
+        _offerings.RemoveAll(existing => wanted.TrueForAll(offering => offering.Service.Id != existing.ServiceId));
+        foreach (var (service, price) in wanted)
+        {
+            if (FindOffering(service.Id) is { } existing)
+            {
+                existing.ChangePrice(price);
+            }
+            else
+            {
+                _offerings.Add(new ServiceOffering(service, price));
+            }
+        }
+
+        return Result.Success;
+    }
+
     private ServiceOffering? FindOffering(Guid serviceId) =>
         _offerings.Find(offering => offering.ServiceId == serviceId);
 

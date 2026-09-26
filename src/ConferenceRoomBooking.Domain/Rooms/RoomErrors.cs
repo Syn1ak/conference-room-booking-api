@@ -36,6 +36,9 @@ public static class RoomErrors
     public static readonly Error ServiceAlreadyOffered = FieldError(
         "Room.ServiceAlreadyOffered", nameof(ServiceOffering.ServiceId), "The room already offers this service.");
 
+    public static readonly Error ServiceListedTwice = FieldError(
+        "Room.ServiceListedTwice", "Services", "Each service can be listed only once.");
+
     public static readonly Error ServiceNotOffered = FieldError(
         "Room.ServiceNotOffered", nameof(ServiceOffering.ServiceId), "The room doesn't offer this service.");
 

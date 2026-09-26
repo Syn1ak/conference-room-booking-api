@@ -1,5 +1,6 @@
 using ConferenceRoomBooking.Application.Common;
 using ConferenceRoomBooking.Application.Rooms;
+using ConferenceRoomBooking.Application.Services;
 using ConferenceRoomBooking.Domain.Common;
 
 namespace ConferenceRoomBooking.Application.Reports;
@@ -10,6 +11,7 @@ namespace ConferenceRoomBooking.Application.Reports;
 public sealed class ReportService(
     IReportQueries queries,
     IRoomRepository rooms,
+    IServiceRepository services,
     VenueTimeZone venueTimeZone,
     TimeProvider timeProvider)
 {
@@ -41,6 +43,15 @@ public sealed class ReportService(
             to,
             async (period, bookings) => DemandReport.Build(
                 period, bookings, (await rooms.ListAsync(cancellationToken)).Count, venueTimeZone.TimeZone),
+            cancellationToken);
+
+    public Task<Result<ServiceUptakeReport>> GetServiceUptakeAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken) =>
+        BuildAsync(
+            from,
+            to,
+            async (period, bookings) => ServiceUptakeReport.Build(
+                period, bookings, await services.ListAsync(cancellationToken)),
             cancellationToken);
 
     private async Task<Result<TReport>> BuildAsync<TReport>(

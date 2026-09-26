@@ -72,4 +72,23 @@ public sealed class ReportsController(ReportService reportService) : ControllerB
 
         return result.IsSuccess ? Ok(DemandReportResponse.From(result.Value)) : this.ErrorResponse(result.Error);
     }
+
+    /// <summary>
+    /// Uptake of each catalog service: how many confirmed bookings include it, as a share of all confirmed bookings,
+    /// and what it brought in at the prices saved with the bookings.
+    /// </summary>
+    /// <param name="period">The days the report covers.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    [HttpGet("services")]
+    [ProducesResponseType<ServiceUptakeReportResponse>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<ServiceUptakeReportResponse>> ServiceUptake(
+        [FromQuery] ReportPeriodQuery period, CancellationToken cancellationToken)
+    {
+        var result = await reportService.GetServiceUptakeAsync(
+            period.From!.Value, period.To!.Value, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(ServiceUptakeReportResponse.From(result.Value))
+            : this.ErrorResponse(result.Error);
+    }
 }

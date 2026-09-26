@@ -23,6 +23,8 @@ module.exports = defineConfig([
         { selector: 'typeAlias', format: ['PascalCase'], prefix: ['T'] },
         { selector: 'enum', format: ['PascalCase'] },
       ],
+      // Signal inputs are named $name and aliased to name, so templates bind [name] (our signal naming convention).
+      '@angular-eslint/no-input-rename': 'off',
       '@angular-eslint/prefer-signals': 'error',
       '@angular-eslint/prefer-output-readonly': 'error',
       '@angular-eslint/directive-selector': [
@@ -36,7 +38,8 @@ module.exports = defineConfig([
       '@angular-eslint/component-selector': [
         'error',
         {
-          type: 'element',
+          // Attribute selectors let components enhance native elements, like <button app-button>.
+          type: ['element', 'attribute'],
           prefix: 'app',
           style: 'kebab-case',
         },

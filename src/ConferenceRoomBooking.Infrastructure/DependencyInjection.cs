@@ -42,7 +42,10 @@ public static class DependencyInjection
                 $"Connection string '{ConnectionStringName}' is not configured. " +
                 "Set it in user-secrets locally or in the App Service settings in Azure.");
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        // Azure SQL drops connections now and then by design (failovers, maintenance, a serverless database waking up),
+        // so transient errors are retried rather than failing the request (ADR 0008).
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(connectionString, sqlServer => sqlServer.EnableRetryOnFailure()));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IServiceRepository, ServiceRepository>();

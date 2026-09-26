@@ -97,6 +97,7 @@ Several questions are open:
   - Every booking, cancellation, registration, and lockout leaves a log line that can be traced by user id.
 - **Negative:**
   - A request can wait up to about a minute while retries run before it fails.
+  - A database that is down or still starting, where the connection is refused or reset, isn't a transient error to SQL Server's strategy. Those requests fail at once with a 500, and `/health` reports it.
   - If a commit succeeds but its reply is lost, the retried booking finds its own booking and returns 409 "slot taken" ([ADR 0006](0006-api-endpoints-for-rooms-and-bookings.md) already accepts this).
   - Once retries run out, the client gets a 500, not a 503, so it can't tell a temporary failure from a bug.
   - Every transaction added in the future must run inside the execution strategy and clear the change tracker.

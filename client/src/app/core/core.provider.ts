@@ -1,6 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { EnvironmentProviders, inject, provideAppInitializer, Provider } from '@angular/core';
 import { provideRouter, Routes, withComponentInputBinding } from '@angular/router';
+import { errorInterceptor } from './interceptors/error.interceptor';
 import { VenueStore } from './services/venue/venue.store';
 
 export type TCoreOptions = {
@@ -13,7 +14,7 @@ export type TCoreOptions = {
 export function provideCore({ routes }: TCoreOptions): (Provider | EnvironmentProviders)[] {
   return [
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([errorInterceptor])),
     provideAppInitializer(() => inject(VenueStore).load()),
   ];
 }

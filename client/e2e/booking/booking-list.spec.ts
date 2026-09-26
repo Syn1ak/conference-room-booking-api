@@ -1,6 +1,6 @@
 import { uniqueName } from '../support/api';
 import { expect, signIn, test } from '../support/fixtures';
-import { futureDate, slot } from '../support/slots';
+import { futureDate, randomFutureDate, slot } from '../support/slots';
 
 test.describe('bookings list', () => {
   test("a client sees only their own bookings, and staff see everyone's", async ({
@@ -11,10 +11,9 @@ test.describe('bookings list', () => {
     const room = await api.createRoom(admin, { name: uniqueName('List'), capacity: 10 });
     const ann = await api.registerClient();
     const bob = await api.registerClient();
-    // Later than any other test's bookings, so they head the staff list, which starts with the latest.
-    const date = futureDate(360);
-    await api.book(ann, { roomId: room.id, ...slot(date, '09:00', '10:00') });
-    await api.book(bob, { roomId: room.id, ...slot(date, '10:00', '11:00') });
+    const date = randomFutureDate();
+    const annBooking = await api.book(ann, { roomId: room.id, ...slot(date, '09:00', '10:00') });
+    const bobBooking = await api.book(bob, { roomId: room.id, ...slot(date, '10:00', '11:00') });
 
     const annPage = await (await browser.newContext()).newPage();
     await signIn(annPage, ann);
@@ -23,13 +22,17 @@ test.describe('bookings list', () => {
     await expect(annRows).toHaveCount(1);
     await expect(annRows).toContainText('09:00–10:00');
 
+    // Staff can open either client's booking; the list's position of them depends on everyone else's bookings.
     const adminPage = await (await browser.newContext()).newPage();
     await signIn(adminPage, admin);
-    await adminPage.goto('/bookings');
-    const adminRows = adminPage.getByRole('listitem').filter({ hasText: room.name });
-    await expect(adminRows).toHaveCount(2);
-    await expect(adminRows.filter({ hasText: `Client ${ann.userId.slice(0, 8)}` })).toHaveCount(1);
-    await expect(adminRows.filter({ hasText: `Client ${bob.userId.slice(0, 8)}` })).toHaveCount(1);
+    for (const [booking, client] of [
+      [annBooking, ann],
+      [bobBooking, bob],
+    ] as const) {
+      await adminPage.goto(`/bookings/${booking.id}`);
+      await expect(adminPage.getByRole('heading', { name: room.name })).toBeVisible();
+      await expect(adminPage.getByText(client.userId)).toBeVisible();
+    }
   });
 
   test('pages through twelve bookings', async ({ page, api }) => {

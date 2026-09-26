@@ -81,11 +81,22 @@ export default class RegisterComponent {
     { submission: { action: (field) => this.submit(field().value()) } },
   );
 
-  protected readonly $formErrors = computed(() =>
-    this.registerForm().errors().map(validationMessage),
-  );
+  /**
+   * Why the last attempt failed, when it isn't about a field. Kept out of the form's errors, which would block trying
+   * again until something was edited.
+   */
+  protected readonly $submitError = signal<string | null>(null);
+
+  protected readonly $formErrors = computed(() => {
+    const submitError = this.$submitError();
+    const errors = this.registerForm().errors().map(validationMessage);
+
+    return submitError ? [submitError, ...errors] : errors;
+  });
 
   private async submit({ email, password }: TRegistration): Promise<TreeValidationResult> {
+    this.$submitError.set(null);
+
     try {
       const role = await this.signInService.register({ email, password });
       await this.router.navigateByUrl(this.$safeReturnUrl() ?? homeUrl(role));
@@ -96,14 +107,13 @@ export default class RegisterComponent {
 
       if (apiError.status === 429) {
         this.cooldown.start(apiError.retryAfterSeconds ?? 60);
-        return { kind: 'server', message: 'Too many attempts. Wait a moment and try again.' };
+        this.$submitError.set('Too many attempts. Wait a moment and try again.');
+        return undefined;
       }
 
       if (apiError.status === 0 || apiError.status >= 500) {
-        return {
-          kind: 'server',
-          message: "We couldn't reach the server. Check your connection and try again.",
-        };
+        this.$submitError.set("We couldn't reach the server. Check your connection and try again.");
+        return undefined;
       }
 
       return toFormErrors(apiError, {

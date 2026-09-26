@@ -123,6 +123,37 @@ describe('LoginComponent', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't reach the server.");
   });
 
+  it('can try again right away after the server was unreachable, without editing anything', async () => {
+    const { http } = await setup();
+
+    await fillIn();
+    http.expectOne('/api/auth/login').error(new ProgressEvent('error'));
+    await screen.findByRole('alert');
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+
+    http.expectOne('/api/auth/login');
+  });
+
+  it('can sign in once the rate limit has passed, without editing anything', async () => {
+    const { http, fixture } = await setup();
+
+    await fillIn();
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    http
+      .expectOne('/api/auth/login')
+      .flush(null, {
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: { 'Retry-After': '2' },
+      });
+    await screen.findByRole('button', { name: 'Try again in 2 s' });
+    vi.advanceTimersByTime(2000);
+    await fixture.whenStable();
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+
+    http.expectOne('/api/auth/login');
+  });
+
   it('links to registration, keeping the return address', async () => {
     await setup('/bookings');
 

@@ -60,12 +60,25 @@ export default class LoginComponent {
     { submission: { action: (field) => this.submit(field().value()) } },
   );
 
-  protected readonly $formErrors = computed(() => this.loginForm().errors().map(validationMessage));
+  /**
+   * Why the last attempt failed, when it isn't about a field. Kept out of the form's errors, which would block trying
+   * again until something was edited.
+   */
+  protected readonly $submitError = signal<string | null>(null);
+
+  protected readonly $formErrors = computed(() => {
+    const submitError = this.$submitError();
+    const errors = this.loginForm().errors().map(validationMessage);
+
+    return submitError ? [submitError, ...errors] : errors;
+  });
 
   private async submit(credentials: {
     email: string;
     password: string;
   }): Promise<TreeValidationResult> {
+    this.$submitError.set(null);
+
     try {
       const role = await this.signInService.signIn(credentials);
       await this.router.navigateByUrl(this.$safeReturnUrl() ?? homeUrl(role));
@@ -76,22 +89,19 @@ export default class LoginComponent {
 
       if (apiError.status === 401) {
         // The same message for an unknown email, a wrong password, and a locked account (ADR 0001).
-        return { kind: 'server', message: 'Invalid email or password.' };
+        this.$submitError.set('Invalid email or password.');
+        return undefined;
       }
 
       if (apiError.status === 429) {
         this.cooldown.start(apiError.retryAfterSeconds ?? 60);
-        return {
-          kind: 'server',
-          message: 'Too many sign-in attempts. Wait a moment and try again.',
-        };
+        this.$submitError.set('Too many sign-in attempts. Wait a moment and try again.');
+        return undefined;
       }
 
       if (apiError.status === 0 || apiError.status >= 500) {
-        return {
-          kind: 'server',
-          message: "We couldn't reach the server. Check your connection and try again.",
-        };
+        this.$submitError.set("We couldn't reach the server. Check your connection and try again.");
+        return undefined;
       }
 
       return toFormErrors(apiError, {

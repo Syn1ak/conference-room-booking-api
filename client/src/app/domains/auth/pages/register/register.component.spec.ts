@@ -88,6 +88,17 @@ describe('RegisterComponent', () => {
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith('/?capacity=10'));
   });
 
+  it('can try again right away after the server was unreachable, without editing anything', async () => {
+    const { http } = await setup();
+
+    await fillIn();
+    http.expectOne('/api/auth/register').error(new ProgressEvent('error'));
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't reach the server.");
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    http.expectOne('/api/auth/register');
+  });
+
   it('shows a taken email next to the email field', async () => {
     const { http } = await setup();
 

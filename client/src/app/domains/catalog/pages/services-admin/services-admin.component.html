@@ -62,6 +62,18 @@
                   <app-icon [icon]="icons.Pencil" class="size-4" />
                   Edit
                 </button>
+                <button
+                  app-button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  class="text-red-600 hover:text-red-700 dark:text-red-400"
+                  [attr.aria-label]="'Delete ' + service.name"
+                  (click)="facade.delete(service)"
+                >
+                  <app-icon [icon]="icons.Trash2" class="size-4" />
+                  Delete
+                </button>
               </td>
             </tr>
           }

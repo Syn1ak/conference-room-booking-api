@@ -22,4 +22,8 @@ export class ServicesClient {
   update$(id: string, service: IServiceRequest, context?: HttpContext): Observable<IService> {
     return this.http.put<IService>(`/api/services/${id}`, service, { context });
   }
+
+  delete$(id: string, context?: HttpContext): Observable<void> {
+    return this.http.delete<void>(`/api/services/${id}`, { context });
+  }
 }

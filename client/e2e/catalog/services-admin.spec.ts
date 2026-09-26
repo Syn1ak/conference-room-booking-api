@@ -44,6 +44,25 @@ test.describe('services admin', () => {
     ).toBeVisible();
   });
 
+  test('an unused service can be deleted, one a room offers cannot', async ({ page, api }) => {
+    const admin = await api.loginAdmin();
+    const unused = await api.createService(admin, { standardPrice: 10 });
+    const offered = await api.createService(admin, { standardPrice: 20 });
+    await api.createRoom(admin, { services: [{ serviceId: offered.id }] });
+    await signIn(page, admin);
+    await page.goto('/admin/services');
+
+    await page.getByRole('button', { name: `Delete ${unused.name}` }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete service' }).click();
+    await expect(page.getByText(`${unused.name} deleted`)).toBeVisible();
+    await expect(page.getByRole('rowheader', { name: unused.name })).toHaveCount(0);
+
+    await page.getByRole('button', { name: `Delete ${offered.name}` }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete service' }).click();
+    await expect(page.getByText(`Can't delete ${offered.name}`)).toBeVisible();
+    await expect(page.getByRole('rowheader', { name: offered.name })).toBeVisible();
+  });
+
   test('clients get the no-access page', async ({ page, api }) => {
     await signIn(page, await api.registerClient());
 

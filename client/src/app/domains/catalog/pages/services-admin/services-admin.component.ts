@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { IService } from '../../../../core/entities/services/service.dto';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { ButtonComponent } from '../../../../shared/ui/components/button/button.component';
-import { Package, Pencil, Plus } from 'lucide';
+import { Package, Pencil, Plus, Trash2 } from 'lucide';
 import { CardComponent } from '../../../../shared/ui/components/card/card.component';
 import { EmptyStateComponent } from '../../../../shared/ui/components/empty-state/empty-state.component';
 import { ErrorStateComponent } from '../../../../shared/ui/components/error-state/error-state.component';
@@ -32,7 +32,7 @@ import { ServicesAdminFacade } from './data-access/services-admin.facade';
   templateUrl: './services-admin.component.html',
 })
 export default class ServicesAdminComponent {
-  protected readonly icons = { Package, Pencil, Plus };
+  protected readonly icons = { Package, Pencil, Plus, Trash2 };
   protected readonly facade = inject(ServicesAdminFacade);
   private readonly serviceForm = inject(ServiceFormDialogService);
   private readonly toasts = inject(ToastService);

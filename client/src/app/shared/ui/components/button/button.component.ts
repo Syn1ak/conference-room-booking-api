@@ -37,7 +37,8 @@ const SIZE_CLASSES: Record<TButtonSize, string> = {
     @if ($loading()) {
       <app-spinner class="absolute" />
     }
-    <span class="inline-flex items-center gap-2" [class.invisible]="$loading()">
+    <!-- Faded rather than hidden: visibility: hidden would also drop the button's accessible name. -->
+    <span class="inline-flex items-center gap-2" [class.opacity-0]="$loading()">
       <ng-content />
     </span>
   `,

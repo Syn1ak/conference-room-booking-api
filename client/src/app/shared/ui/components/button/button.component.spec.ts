@@ -30,12 +30,11 @@ describe('ButtonComponent', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it('keeps its content in the layout while loading, so its width stays the same', async () => {
+  it('keeps its content in the layout and its accessible name while loading', async () => {
     await render(`<button app-button loading>Save</button>`, { imports: [ButtonComponent] });
 
-    const label = screen.getByText('Save');
-
-    expect(label).toHaveClass('invisible');
+    expect(screen.getByText('Save')).toHaveClass('opacity-0');
+    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
   });
 
   it('marks a disabled link as disabled without a disabled attribute on the anchor', async () => {

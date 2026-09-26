@@ -1,5 +1,6 @@
 using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Domain.Rooms;
+using ConferenceRoomBooking.Infrastructure.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -35,7 +36,22 @@ internal sealed class RoomConfiguration : IEntityTypeConfiguration<Room>
                 .WithMany()
                 .HasForeignKey(o => o.ServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            offering.HasData(InitialCatalog.Offerings.Select(seed => new
+            {
+                seed.RoomId,
+                seed.ServiceId,
+                seed.Price,
+            }));
         });
         builder.Navigation(room => room.Offerings).HasField("_offerings");
+
+        builder.HasData(InitialCatalog.Rooms.Select(room => new
+        {
+            room.Id,
+            room.Name,
+            room.Capacity,
+            room.HourlyPrice,
+        }));
     }
 }

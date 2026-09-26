@@ -1,5 +1,6 @@
 using ConferenceRoomBooking.Domain.Common;
 using ConferenceRoomBooking.Domain.Services;
+using ConferenceRoomBooking.Infrastructure.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,5 +21,12 @@ internal sealed class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.HasIndex(service => service.Name).IsUnique().HasDatabaseName(NameIndex);
 
         builder.Property(service => service.StandardPrice).HasPrecision(18, Prices.DecimalPlaces);
+
+        builder.HasData(InitialCatalog.Services.Select(service => new
+        {
+            service.Id,
+            service.Name,
+            service.StandardPrice,
+        }));
     }
 }

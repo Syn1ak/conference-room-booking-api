@@ -1,5 +1,6 @@
-import { httpResource, HttpResourceRef } from '@angular/common/http';
-import { Injectable, Signal } from '@angular/core';
+import { HttpClient, HttpContext, httpResource, HttpResourceRef } from '@angular/common/http';
+import { inject, Injectable, Signal } from '@angular/core';
+import { Observable } from 'rxjs';
 import { IAvailableRoom, IRoom } from '../../../entities/rooms/room.dto';
 
 export type TAvailabilityQuery = {
@@ -15,6 +16,8 @@ export type TAvailabilityQuery = {
  */
 @Injectable({ providedIn: 'root' })
 export class RoomsClient {
+  private readonly http = inject(HttpClient);
+
   roomsResource(): HttpResourceRef<IRoom[] | undefined> {
     return httpResource<IRoom[]>(() => '/api/rooms');
   }
@@ -28,5 +31,9 @@ export class RoomsClient {
 
       return query ? { url: '/api/rooms/available', params: { ...query } } : undefined;
     });
+  }
+
+  delete$(id: string, context?: HttpContext): Observable<void> {
+    return this.http.delete<void>(`/api/rooms/${id}`, { context });
   }
 }

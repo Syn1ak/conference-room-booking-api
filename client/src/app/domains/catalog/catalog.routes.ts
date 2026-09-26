@@ -13,4 +13,10 @@ export const ROUTES: Route[] = [
     canActivate: [roleGuard('Admin')],
     loadComponent: () => import('./pages/services-admin/services-admin.component'),
   },
+  {
+    path: 'admin/rooms',
+    title: 'Manage rooms',
+    canActivate: [roleGuard('Admin')],
+    loadComponent: () => import('./pages/rooms-admin/rooms-admin.component'),
+  },
 ];

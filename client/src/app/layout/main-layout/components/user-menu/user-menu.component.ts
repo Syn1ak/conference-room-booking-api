@@ -2,10 +2,11 @@ import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { Component, computed, inject, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { LucideCalendarDays, LucideChevronDown, LucideLogOut } from '@lucide/angular';
+import { CalendarDays, ChevronDown, LogOut } from 'lucide';
 import { SessionStore } from '../../../../core/services/session/session.store';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { BadgeComponent } from '../../../../shared/ui/components/badge/badge.component';
+import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 
 type TUserMenuAction = 'bookings' | 'sign-out';
 
@@ -14,20 +15,12 @@ type TUserMenuAction = 'bookings' | 'sign-out';
  */
 @Component({
   selector: 'app-user-menu',
-  imports: [
-    Menu,
-    MenuContent,
-    MenuItem,
-    MenuTrigger,
-    OverlayModule,
-    BadgeComponent,
-    LucideChevronDown,
-    LucideLogOut,
-    LucideCalendarDays,
-  ],
+  imports: [Menu, MenuContent, MenuItem, MenuTrigger, OverlayModule, BadgeComponent, IconComponent],
   templateUrl: './user-menu.component.html',
 })
 export class UserMenuComponent {
+  protected readonly icons = { CalendarDays, ChevronDown, LogOut };
+
   protected readonly session = inject(SessionStore);
   private readonly router = inject(Router);
   private readonly toasts = inject(ToastService);

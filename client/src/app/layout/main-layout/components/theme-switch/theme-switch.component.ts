@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
-import { LucideMonitor, LucideMoon, LucideSun } from '@lucide/angular';
+import { Monitor, Moon, Sun } from 'lucide';
 import { ThemeService, TThemePreference } from '../../../../core/services/theme/theme.service';
+import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 
 /**
  * Picks the light theme, the dark theme, or the system's, as a radio group of three icon buttons.
  */
 @Component({
   selector: 'app-theme-switch',
-  imports: [LucideSun, LucideMoon, LucideMonitor],
+  imports: [IconComponent],
   template: `
     @for (option of options; track option.value) {
       <button
@@ -21,13 +22,13 @@ import { ThemeService, TThemePreference } from '../../../../core/services/theme/
       >
         @switch (option.value) {
           @case ('light') {
-            <svg lucideSun class="size-4"></svg>
+            <app-icon [icon]="icons.Sun" class="size-4" />
           }
           @case ('dark') {
-            <svg lucideMoon class="size-4"></svg>
+            <app-icon [icon]="icons.Moon" class="size-4" />
           }
           @default {
-            <svg lucideMonitor class="size-4"></svg>
+            <app-icon [icon]="icons.Monitor" class="size-4" />
           }
         }
       </button>
@@ -40,6 +41,8 @@ import { ThemeService, TThemePreference } from '../../../../core/services/theme/
   },
 })
 export class ThemeSwitchComponent {
+  protected readonly icons = { Monitor, Moon, Sun };
+
   protected readonly theme = inject(ThemeService);
 
   protected readonly options: { value: TThemePreference; label: string }[] = [

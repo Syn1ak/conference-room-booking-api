@@ -1,10 +1,6 @@
 import { Component, computed, input } from '@angular/core';
-import {
-  LucideCircleAlert,
-  LucideCircleCheck,
-  LucideInfo,
-  LucideTriangleAlert,
-} from '@lucide/angular';
+import { CircleAlert, CircleCheck, Info, TriangleAlert } from 'lucide';
+import { IconComponent } from '../icon/icon.component';
 
 export type TAlertTone = 'info' | 'success' | 'warning' | 'danger';
 
@@ -23,20 +19,20 @@ const TONE_CLASSES: Record<TAlertTone, string> = {
  */
 @Component({
   selector: 'app-alert',
-  imports: [LucideInfo, LucideCircleCheck, LucideTriangleAlert, LucideCircleAlert],
+  imports: [IconComponent],
   template: `
     @switch ($tone()) {
       @case ('success') {
-        <svg lucideCircleCheck class="mt-0.5 size-4 shrink-0"></svg>
+        <app-icon [icon]="icons.CircleCheck" class="mt-0.5 size-4 shrink-0" />
       }
       @case ('warning') {
-        <svg lucideTriangleAlert class="mt-0.5 size-4 shrink-0"></svg>
+        <app-icon [icon]="icons.TriangleAlert" class="mt-0.5 size-4 shrink-0" />
       }
       @case ('danger') {
-        <svg lucideCircleAlert class="mt-0.5 size-4 shrink-0"></svg>
+        <app-icon [icon]="icons.CircleAlert" class="mt-0.5 size-4 shrink-0" />
       }
       @default {
-        <svg lucideInfo class="mt-0.5 size-4 shrink-0"></svg>
+        <app-icon [icon]="icons.Info" class="mt-0.5 size-4 shrink-0" />
       }
     }
     <div class="min-w-0 text-sm">
@@ -52,6 +48,8 @@ const TONE_CLASSES: Record<TAlertTone, string> = {
   },
 })
 export class AlertComponent {
+  protected readonly icons = { CircleAlert, CircleCheck, Info, TriangleAlert };
+
   readonly $tone = input<TAlertTone>('info', { alias: 'tone' });
   readonly $title = input<string | null>(null, { alias: 'title' });
 

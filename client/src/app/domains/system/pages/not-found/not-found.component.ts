@@ -1,19 +1,20 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideMapPinOff } from '@lucide/angular';
+import { MapPinOff } from 'lucide';
 import { ButtonComponent } from '../../../../shared/ui/components/button/button.component';
+import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 
 /**
  * Shown for an address that matches no page.
  */
 @Component({
   selector: 'app-not-found',
-  imports: [RouterLink, ButtonComponent, LucideMapPinOff],
+  imports: [RouterLink, ButtonComponent, IconComponent],
   template: `
     <div
       class="mb-6 flex size-14 items-center justify-center rounded-2xl bg-surface-muted text-ink-subtle ring-1 ring-line"
     >
-      <svg lucideMapPinOff class="size-7"></svg>
+      <app-icon [icon]="icons.MapPinOff" class="size-7" />
     </div>
     <p class="text-sm font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-400">
       404
@@ -26,4 +27,6 @@ import { ButtonComponent } from '../../../../shared/ui/components/button/button.
   `,
   host: { class: 'flex flex-col items-center px-4 py-24 text-center' },
 })
-export default class NotFoundComponent {}
+export default class NotFoundComponent {
+  protected readonly icons = { MapPinOff };
+}

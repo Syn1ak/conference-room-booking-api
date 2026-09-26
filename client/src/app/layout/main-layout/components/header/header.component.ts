@@ -1,13 +1,14 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideDoorOpen, LucideMenu, LucideX } from '@lucide/angular';
+import { DoorOpen, Menu as MenuIcon, X } from 'lucide';
 import { filter } from 'rxjs';
 import { SessionStore } from '../../../../core/services/session/session.store';
 import { ButtonComponent } from '../../../../shared/ui/components/button/button.component';
 import { NAV_LINKS } from '../../constants/nav-links.constant';
 import { ThemeSwitchComponent } from '../theme-switch/theme-switch.component';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
+import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 
 /**
  * The sticky top bar: the logo, the navigation for the current user, the theme switch, and the account menu or the
@@ -21,9 +22,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
     ButtonComponent,
     ThemeSwitchComponent,
     UserMenuComponent,
-    LucideDoorOpen,
-    LucideMenu,
-    LucideX,
+    IconComponent,
   ],
   templateUrl: './header.component.html',
   host: {
@@ -32,6 +31,8 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
   },
 })
 export class HeaderComponent {
+  protected readonly icons = { DoorOpen, Menu: MenuIcon, X };
+
   protected readonly session = inject(SessionStore);
 
   protected readonly $menuOpen = signal(false);

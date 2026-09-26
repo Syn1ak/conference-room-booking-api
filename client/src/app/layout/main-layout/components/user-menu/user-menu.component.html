@@ -14,7 +14,7 @@
     >
       {{ $initial() }}
     </span>
-    <svg lucideChevronDown class="size-4 text-ink-subtle"></svg>
+    <app-icon [icon]="icons.ChevronDown" class="size-4 text-ink-subtle" />
   </button>
 
   <ng-template
@@ -45,7 +45,7 @@
             value="bookings"
             class="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:bg-surface-muted"
           >
-            <svg lucideCalendarDays class="size-4 text-ink-subtle"></svg>
+            <app-icon [icon]="icons.CalendarDays" class="size-4 text-ink-subtle" />
             My bookings
           </div>
         }
@@ -54,7 +54,7 @@
           value="sign-out"
           class="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:bg-surface-muted"
         >
-          <svg lucideLogOut class="size-4 text-ink-subtle"></svg>
+          <app-icon [icon]="icons.LogOut" class="size-4 text-ink-subtle" />
           Sign out
         </div>
       </ng-template>

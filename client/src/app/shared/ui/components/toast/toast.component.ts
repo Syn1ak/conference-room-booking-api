@@ -1,5 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
-import { LucideCircleAlert, LucideCircleCheck, LucideInfo, LucideX } from '@lucide/angular';
+import { CircleAlert, CircleCheck, Info, X } from 'lucide';
+import { IconComponent } from '../icon/icon.component';
 
 export type TToastTone = 'info' | 'success' | 'error';
 
@@ -14,18 +15,18 @@ const ICON_CLASSES: Record<TToastTone, string> = {
  */
 @Component({
   selector: 'app-toast',
-  imports: [LucideInfo, LucideCircleCheck, LucideCircleAlert, LucideX],
+  imports: [IconComponent],
   template: `
     <span [class]="$iconClasses()">
       @switch ($tone()) {
         @case ('success') {
-          <svg lucideCircleCheck class="size-5"></svg>
+          <app-icon [icon]="icons.CircleCheck" class="size-5" />
         }
         @case ('error') {
-          <svg lucideCircleAlert class="size-5"></svg>
+          <app-icon [icon]="icons.CircleAlert" class="size-5" />
         }
         @default {
-          <svg lucideInfo class="size-5"></svg>
+          <app-icon [icon]="icons.Info" class="size-5" />
         }
       }
     </span>
@@ -41,7 +42,7 @@ const ICON_CLASSES: Record<TToastTone, string> = {
       aria-label="Dismiss"
       (click)="$dismiss.emit()"
     >
-      <svg lucideX class="size-4"></svg>
+      <app-icon [icon]="icons.X" class="size-4" />
     </button>
   `,
   host: {
@@ -51,6 +52,8 @@ const ICON_CLASSES: Record<TToastTone, string> = {
   },
 })
 export class ToastComponent {
+  protected readonly icons = { CircleAlert, CircleCheck, Info, X };
+
   readonly $tone = input.required<TToastTone>({ alias: 'tone' });
   readonly $title = input.required<string>({ alias: 'title' });
   readonly $message = input<string | null>(null, { alias: 'message' });

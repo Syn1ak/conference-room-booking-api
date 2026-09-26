@@ -1,12 +1,13 @@
 import { Component, input, output } from '@angular/core';
-import { LucideX } from '@lucide/angular';
+import { X } from 'lucide';
+import { IconComponent } from '../icon/icon.component';
 
 /**
  * The frame of a dialog: a title with a close button, the content, and actions (`appDialogActions`) at the bottom.
  */
 @Component({
   selector: 'app-dialog-shell',
-  imports: [LucideX],
+  imports: [IconComponent],
   template: `
     <header class="flex items-start justify-between gap-4 px-6 pt-6">
       <div class="min-w-0">
@@ -21,7 +22,7 @@ import { LucideX } from '@lucide/angular';
         aria-label="Close"
         (click)="$dismiss.emit()"
       >
-        <svg lucideX class="size-5"></svg>
+        <app-icon [icon]="icons.X" class="size-5" />
       </button>
     </header>
     <div class="px-6 py-5"><ng-content /></div>
@@ -38,6 +39,8 @@ import { LucideX } from '@lucide/angular';
   },
 })
 export class DialogShellComponent {
+  protected readonly icons = { X };
+
   readonly $title = input.required<string>({ alias: 'title' });
   readonly $description = input<string | null>(null, { alias: 'description' });
   readonly $dismiss = output<void>({ alias: 'dismiss' });

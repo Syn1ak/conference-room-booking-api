@@ -1,6 +1,7 @@
 import { httpResource, HttpResourceRef } from '@angular/common/http';
 import { Injectable, Signal } from '@angular/core';
 import {
+  IDemandReport,
   IOccupancyReport,
   IRevenueReport,
   TRevenueGrouping,
@@ -26,6 +27,13 @@ export class ReportsClient {
   occupancyResource($query: Signal<TReportQuery>): HttpResourceRef<IOccupancyReport | undefined> {
     return httpResource<IOccupancyReport>(() => ({
       url: '/api/reports/occupancy',
+      params: { ...$query() },
+    }));
+  }
+
+  demandResource($query: Signal<TReportQuery>): HttpResourceRef<IDemandReport | undefined> {
+    return httpResource<IDemandReport>(() => ({
+      url: '/api/reports/demand',
       params: { ...$query() },
     }));
   }

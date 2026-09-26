@@ -1,3 +1,5 @@
+import { TTimeBandKind } from '../venue/venue.dto';
+
 /** The days a report covers, in venue time, both included. */
 export interface IReportPeriod {
   from: string;
@@ -54,4 +56,19 @@ export interface IOccupancyReport {
   period: IReportPeriod;
   overall: IOccupancyFigures;
   rooms: { roomId: string; roomName: string; capacity: number; occupancy: IOccupancyFigures }[];
+}
+
+export interface IBandDemand {
+  band: TTimeBandKind;
+  bookedHours: number;
+  /** The band's hours per day × rooms × days. */
+  availableHours: number;
+  occupancyRate: number;
+}
+
+export interface IDemandReport {
+  period: IReportPeriod;
+  bands: IBandDemand[];
+  /** Monday first. */
+  weekdays: { weekday: string; dayCount: number; bands: IBandDemand[] }[];
 }

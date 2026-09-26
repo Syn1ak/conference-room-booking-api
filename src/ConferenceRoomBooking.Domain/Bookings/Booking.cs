@@ -1,4 +1,5 @@
 using ConferenceRoomBooking.Domain.Common;
+using ConferenceRoomBooking.Domain.Pricing;
 using ConferenceRoomBooking.Domain.Rooms;
 
 namespace ConferenceRoomBooking.Domain.Bookings;
@@ -18,7 +19,8 @@ public sealed class Booking
         BookingSlot slot,
         int attendeeCount,
         decimal roomHourlyPrice,
-        List<BookedService> bookedServices)
+        List<BookedService> bookedServices,
+        PriceBreakdown price)
     {
         Id = id;
         RoomId = roomId;
@@ -28,6 +30,8 @@ public sealed class Booking
         Status = BookingStatus.Confirmed;
         RoomHourlyPrice = roomHourlyPrice;
         _bookedServices = bookedServices;
+        RentalPrice = price.RentalPrice;
+        TotalPrice = price.TotalPrice;
     }
 
     public Guid Id { get; }
@@ -51,12 +55,24 @@ public sealed class Booking
 
     public IReadOnlyCollection<BookedService> BookedServices => _bookedServices;
 
+    /// <summary>The room rental in UAH at booking time, after time-of-day discounts and surcharges.</summary>
+    public decimal RentalPrice { get; }
+
+    /// <summary>What the client pays in UAH: the room rental plus the chosen services.</summary>
+    public decimal TotalPrice { get; }
+
     /// <summary>
-    /// Books <paramref name="room"/> for a client, with services chosen from those the room offers.
+    /// Books <paramref name="room"/> for a client, with services chosen from those the room offers, and prices it
+    /// with time bands applied in <paramref name="venueTimeZone"/>.
     /// Doesn't check for overlapping bookings; that needs the room's other bookings and is done by the caller.
     /// </summary>
     public static Result<Booking> Create(
-        Room room, Guid clientId, BookingSlot slot, int attendeeCount, IReadOnlyCollection<Guid> serviceIds)
+        Room room,
+        Guid clientId,
+        BookingSlot slot,
+        int attendeeCount,
+        IReadOnlyCollection<Guid> serviceIds,
+        TimeZoneInfo venueTimeZone)
     {
         if (attendeeCount < 1)
         {
@@ -85,8 +101,10 @@ public sealed class Booking
             bookedServices.Add(new BookedService(offering.ServiceId, offering.Service.Name, offering.Price));
         }
 
+        var price = PriceCalculator.Calculate(slot, room.HourlyPrice, bookedServices, venueTimeZone);
+
         return new Booking(
-            Guid.CreateVersion7(), room.Id, clientId, slot, attendeeCount, room.HourlyPrice, bookedServices);
+            Guid.CreateVersion7(), room.Id, clientId, slot, attendeeCount, room.HourlyPrice, bookedServices, price);
     }
 
     /// <summary>

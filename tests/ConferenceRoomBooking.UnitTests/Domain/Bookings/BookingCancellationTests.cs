@@ -14,7 +14,8 @@ public sealed class BookingCancellationTests
         Guid.Parse("7b0d7f5e-3c1a-4c55-9d8e-2f6a1b3c4d5e"),
         BookingSlot.Create(Start, Start.AddHours(4), BookedAt, Kyiv).Value,
         40,
-        []).Value;
+        [],
+        Kyiv).Value;
 
     [Fact]
     public void NewBooking_IsNotCancelled()

@@ -139,13 +139,11 @@ describe('LoginComponent', () => {
 
     await fillIn();
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
-    http
-      .expectOne('/api/auth/login')
-      .flush(null, {
-        status: 429,
-        statusText: 'Too Many Requests',
-        headers: { 'Retry-After': '2' },
-      });
+    http.expectOne('/api/auth/login').flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: { 'Retry-After': '2' },
+    });
     await screen.findByRole('button', { name: 'Try again in 2 s' });
     vi.advanceTimersByTime(2000);
     await fixture.whenStable();

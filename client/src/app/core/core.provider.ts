@@ -26,7 +26,11 @@ export function provideCore({ routes }: TCoreOptions): (Provider | EnvironmentPr
     provideRouter(
       routes,
       withComponentInputBinding(),
-      withViewTransitions({ skipInitialTransition: true }),
+      withViewTransitions({
+        skipInitialTransition: true,
+        // A navigation that starts before the previous transition ends skips it; that's expected, not an error.
+        onViewTransitionCreated: ({ transition }) => transition.ready.catch(() => undefined),
+      }),
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
     ),
     { provide: TitleStrategy, useClass: AppTitleStrategy },

@@ -31,5 +31,17 @@ public sealed class ErrorResponseExtensionsTests
         Assert.Equal((409, "A room with this name already exists."), (problem.Status, problem.Title));
     }
 
+    [Fact]
+    public void ErrorResponse_ForNotFound_Returns404ProblemDetails()
+    {
+        var error = Error.NotFound("Room.NotFound", "The room doesn't exist.");
+
+        var result = Assert.IsType<ObjectResult>(_controller.ErrorResponse(error));
+
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+        var problem = Assert.IsType<ProblemDetails>(result.Value);
+        Assert.Equal((404, "The room doesn't exist."), (problem.Status, problem.Title));
+    }
+
     private sealed class TestController : ControllerBase;
 }

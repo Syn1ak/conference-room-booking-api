@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ConferenceRoomBooking.IntegrationTests.Auth;
 
-public sealed class AuthEndpointsTests(ApiFactory factory) : IClassFixture<ApiFactory>
+[Collection(nameof(ApiCollection))]
+public sealed class AuthEndpointsTests(ApiFactory factory)
 {
     private const string ValidPassword = "Client123!";
 

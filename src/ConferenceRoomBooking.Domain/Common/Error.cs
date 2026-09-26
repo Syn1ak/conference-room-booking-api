@@ -13,6 +13,9 @@ public enum ErrorType
 
     /// <summary>The request clashes with the current state, for example a room name that is already taken.</summary>
     Conflict,
+
+    /// <summary>The requested resource doesn't exist, or the caller isn't allowed to know that it does.</summary>
+    NotFound,
 }
 
 /// <summary>
@@ -33,4 +36,7 @@ public sealed record Error(
 
     public static Error Conflict(string code, string description) =>
         new(code, description, ErrorType.Conflict);
+
+    public static Error NotFound(string code, string description) =>
+        new(code, description, ErrorType.NotFound);
 }

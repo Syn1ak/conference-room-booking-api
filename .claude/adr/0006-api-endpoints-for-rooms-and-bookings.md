@@ -46,7 +46,7 @@ Several questions are left open:
 
 ### 5. Rooms and services are public to read
 
-- Listing rooms, reading one room, and listing the service catalog are anonymous, like the search. They expose the same data the search does, and a visitor needs a room's services and prices to decide on a booking.
+- Listing and reading rooms and catalog services are anonymous, like the search. They expose the same data the search does, and a visitor needs a room's services and prices to decide on a booking.
 - Changing rooms and services stays `AdminOnly`. All endpoints remain under the global rate limit.
 - This extends ADR 0001's access matrix with the read endpoints it didn't mention.
 
@@ -66,6 +66,7 @@ Cancelling is refused because of the booking's current state, not because the re
 | Method | Route | Access | Success | Notable failures |
 |---|---|---|---|---|
 | GET | `/api/services` | Anonymous | 200, the catalog | — |
+| GET | `/api/services/{id}` | Anonymous | 200, the service | 404 |
 | POST | `/api/services` | Admin | 201, the service | 409 name taken |
 | PUT | `/api/services/{id}` | Admin | 200, the service | 404, 409 name taken |
 | DELETE | `/api/services/{id}` | Admin | 204 | 404, 409 in use |

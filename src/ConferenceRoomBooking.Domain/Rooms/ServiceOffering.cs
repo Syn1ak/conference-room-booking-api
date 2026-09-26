@@ -14,6 +14,14 @@ public sealed class ServiceOffering
         Price = price;
     }
 
+    /// <summary>Used by EF Core, which loads <see cref="Service"/> separately when it's included in a query.</summary>
+    private ServiceOffering(Guid serviceId, decimal price)
+    {
+        ServiceId = serviceId;
+        Service = null!;
+        Price = price;
+    }
+
     public Guid ServiceId { get; }
 
     public Service Service { get; }

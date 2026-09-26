@@ -26,8 +26,8 @@ describe('ServicesAdminComponent', () => {
 
     const rows = screen.getAllByRole('row').slice(1);
     expect(rows.map((row) => row.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'Projector 500.00 UAH',
-      'Wi-Fi 300.50 UAH',
+      'Projector 500.00 UAH Edit',
+      'Wi-Fi 300.50 UAH Edit',
     ]);
   });
 

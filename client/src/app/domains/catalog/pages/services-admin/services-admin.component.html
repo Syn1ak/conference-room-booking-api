@@ -1,7 +1,12 @@
 <app-page-header
   title="Services"
   description="The extras rooms can offer. Each room charges its own price for a service, or this standard price."
-/>
+>
+  <button app-button appPageActions type="button" (click)="add()">
+    <app-icon [icon]="icons.Plus" class="size-4" />
+    Add service
+  </button>
+</app-page-header>
 
 <section class="mt-8" aria-label="Services" [attr.aria-busy]="facade.$isLoading()">
   @if (facade.$isLoading()) {
@@ -21,6 +26,7 @@
     <app-card [padded]="false">
       <app-empty-state title="No services yet" description="Add a service, then offer it in rooms.">
         <app-icon appEmptyIcon [icon]="icons.Package" class="size-6" />
+        <button app-button type="button" (click)="add()">Add service</button>
       </app-empty-state>
     </app-card>
   } @else {
@@ -32,6 +38,7 @@
           <tr>
             <th scope="col" class="px-6 py-3">Name</th>
             <th scope="col" class="px-6 py-3 text-right">Standard price</th>
+            <th scope="col" class="px-6 py-3"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-line">
@@ -42,6 +49,19 @@
               </th>
               <td class="px-6 py-4 text-right text-ink tabular-nums">
                 {{ service.standardPrice | uah }}
+              </td>
+              <td class="px-4 py-2 text-right whitespace-nowrap">
+                <button
+                  app-button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  [attr.aria-label]="'Edit ' + service.name"
+                  (click)="edit(service)"
+                >
+                  <app-icon [icon]="icons.Pencil" class="size-4" />
+                  Edit
+                </button>
               </td>
             </tr>
           }

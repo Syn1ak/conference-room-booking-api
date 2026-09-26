@@ -58,6 +58,10 @@
   --color-ink-muted: var(--ink-muted);
   --color-ink-subtle: var(--ink-subtle);
 
+  /* Chart series, in fixed order. Validated for colour-blind separation on both themes' surfaces. */
+  --color-chart-1: var(--color-indigo-500);
+  --color-chart-2: var(--color-teal-600);
+
   /* One colour per pricing band, the same in the timeline, the price breakdown, and the demand report. */
   --color-band-morning: var(--color-amber-500);
   --color-band-standard: var(--color-slate-400);

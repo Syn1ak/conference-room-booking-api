@@ -68,6 +68,24 @@ public sealed class RoomOfferingsTests
     }
 
     [Fact]
+    public void OfferService_WithPriceOfMoreThanTwoDecimals_Fails()
+    {
+        var result = _room.OfferService(_projector, 650.555m);
+
+        Assert.Equal(RoomErrors.ServicePriceTooPrecise, result.Error);
+        Assert.Empty(_room.Offerings);
+    }
+
+    [Fact]
+    public void OfferService_WithPriceInKopiykas_Succeeds()
+    {
+        var result = _room.OfferService(_projector, 650.55m);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(650.55m, Assert.Single(_room.Offerings).Price);
+    }
+
+    [Fact]
     public void Offering_KeepsItsPrice_WhenStandardPriceChangesLater()
     {
         _room.OfferService(_projector);
@@ -98,6 +116,17 @@ public sealed class RoomOfferingsTests
         var result = _room.ChangeServicePrice(_projector.Id, -1m);
 
         Assert.Equal(RoomErrors.ServicePriceNegative, result.Error);
+        Assert.Equal(500m, Assert.Single(_room.Offerings).Price);
+    }
+
+    [Fact]
+    public void ChangeServicePrice_ToMoreThanTwoDecimals_FailsAndKeepsPrice()
+    {
+        _room.OfferService(_projector);
+
+        var result = _room.ChangeServicePrice(_projector.Id, 550.555m);
+
+        Assert.Equal(RoomErrors.ServicePriceTooPrecise, result.Error);
         Assert.Equal(500m, Assert.Single(_room.Offerings).Price);
     }
 

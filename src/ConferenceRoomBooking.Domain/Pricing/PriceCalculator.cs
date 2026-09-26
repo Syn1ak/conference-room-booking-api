@@ -1,4 +1,5 @@
 using ConferenceRoomBooking.Domain.Bookings;
+using ConferenceRoomBooking.Domain.Common;
 
 namespace ConferenceRoomBooking.Domain.Pricing;
 
@@ -8,8 +9,6 @@ namespace ConferenceRoomBooking.Domain.Pricing;
 /// </summary>
 public static class PriceCalculator
 {
-    private const int KopiykaDecimals = 2;
-
     /// <summary>
     /// Prices <paramref name="slot"/> at <paramref name="hourlyPrice"/>, with the time bands applied in
     /// <paramref name="venueTimeZone"/>, whatever offset the slot was given in.
@@ -32,7 +31,7 @@ public static class PriceCalculator
 
             var hours = (decimal)(lineEnd - lineStart).Ticks / TimeSpan.TicksPerHour;
             var amount = Math.Round(
-                hours * hourlyPrice * band.Multiplier, KopiykaDecimals, MidpointRounding.AwayFromZero);
+                hours * hourlyPrice * band.Multiplier, Prices.DecimalPlaces, MidpointRounding.AwayFromZero);
             rentalLines.Add(new RentalLine(band.Kind, lineStart, lineEnd, hours, band.Multiplier, amount));
         }
 

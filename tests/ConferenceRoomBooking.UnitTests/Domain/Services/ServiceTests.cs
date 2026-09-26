@@ -66,6 +66,28 @@ public sealed class ServiceTests
     }
 
     [Fact]
+    public void Create_WithPriceInKopiykas_Succeeds()
+    {
+        var result = Service.Create("Projector", 500.55m);
+
+        Assert.Equal(500.55m, result.Value.StandardPrice);
+    }
+
+    [Fact]
+    public void Create_WithTrailingZeroDecimals_Succeeds()
+    {
+        Assert.True(Service.Create("Projector", 500.500m).IsSuccess);
+    }
+
+    [Fact]
+    public void Create_WithMoreThanTwoDecimals_Fails()
+    {
+        var result = Service.Create("Projector", 500.555m);
+
+        Assert.Equal(ServiceErrors.StandardPriceTooPrecise, result.Error);
+    }
+
+    [Fact]
     public void Update_WithValidData_ChangesNameAndPrice()
     {
         var service = Service.Create("Sound", 700m).Value;
@@ -85,6 +107,18 @@ public sealed class ServiceTests
         var result = service.Update("Sound system", -1m);
 
         Assert.Equal(ServiceErrors.StandardPriceNegative, result.Error);
+        Assert.Equal("Sound", service.Name);
+        Assert.Equal(700m, service.StandardPrice);
+    }
+
+    [Fact]
+    public void Update_WithMoreThanTwoDecimals_FailsAndLeavesServiceUnchanged()
+    {
+        var service = Service.Create("Sound", 700m).Value;
+
+        var result = service.Update("Sound system", 700.001m);
+
+        Assert.Equal(ServiceErrors.StandardPriceTooPrecise, result.Error);
         Assert.Equal("Sound", service.Name);
         Assert.Equal(700m, service.StandardPrice);
     }

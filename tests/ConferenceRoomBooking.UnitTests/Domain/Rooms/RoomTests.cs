@@ -77,6 +77,28 @@ public sealed class RoomTests
     }
 
     [Fact]
+    public void Create_WithHourlyPriceInKopiykas_Succeeds()
+    {
+        var result = Room.Create("Room A", 50, 1999.99m);
+
+        Assert.Equal(1999.99m, result.Value.HourlyPrice);
+    }
+
+    [Fact]
+    public void Create_WithTrailingZeroDecimals_Succeeds()
+    {
+        Assert.True(Room.Create("Room A", 50, 2000.500m).IsSuccess);
+    }
+
+    [Fact]
+    public void Create_WithHourlyPriceOfMoreThanTwoDecimals_Fails()
+    {
+        var result = Room.Create("Room A", 50, 1999.995m);
+
+        Assert.Equal(RoomErrors.HourlyPriceTooPrecise, result.Error);
+    }
+
+    [Fact]
     public void Update_WithValidData_ChangesNameCapacityAndPrice()
     {
         var room = Room.Create("Room A", 50, 2000m).Value;
@@ -93,6 +115,7 @@ public sealed class RoomTests
     [InlineData("", 60, 2500, "Room.NameRequired")]
     [InlineData("Room A+", 0, 2500, "Room.CapacityNotPositive")]
     [InlineData("Room A+", 60, -1, "Room.HourlyPriceNegative")]
+    [InlineData("Room A+", 60, 2500.555, "Room.HourlyPriceTooPrecise")]
     public void Update_WithInvalidData_FailsAndLeavesRoomUnchanged(
         string name, int capacity, decimal hourlyPrice, string expectedErrorCode)
     {

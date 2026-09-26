@@ -16,6 +16,11 @@ public static class ServiceErrors
     public static readonly Error StandardPriceNegative = FieldError(
         "Service.StandardPriceNegative", nameof(Service.StandardPrice), "The standard price can't be negative.");
 
+    public static readonly Error StandardPriceTooPrecise = FieldError(
+        "Service.StandardPriceTooPrecise",
+        nameof(Service.StandardPrice),
+        $"The standard price can have at most {Prices.DecimalPlaces} decimal places.");
+
     private static Error FieldError(string code, string field, string message) =>
         Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });
 }

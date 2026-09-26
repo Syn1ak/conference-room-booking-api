@@ -63,6 +63,11 @@ public sealed class Service
             return ServiceErrors.StandardPriceNegative;
         }
 
+        if (!Prices.IsInWholeKopiykas(standardPrice))
+        {
+            return ServiceErrors.StandardPriceTooPrecise;
+        }
+
         return null;
     }
 }

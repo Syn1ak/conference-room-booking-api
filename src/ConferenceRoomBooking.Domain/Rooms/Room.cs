@@ -68,9 +68,9 @@ public sealed class Room
         }
 
         var offeringPrice = price ?? service.StandardPrice;
-        if (offeringPrice < 0)
+        if (ValidateServicePrice(offeringPrice) is { } error)
         {
-            return RoomErrors.ServicePriceNegative;
+            return error;
         }
 
         _offerings.Add(new ServiceOffering(service, offeringPrice));
@@ -84,9 +84,9 @@ public sealed class Room
             return RoomErrors.ServiceNotOffered;
         }
 
-        if (price < 0)
+        if (ValidateServicePrice(price) is { } error)
         {
-            return RoomErrors.ServicePriceNegative;
+            return error;
         }
 
         offering.ChangePrice(price);
@@ -106,6 +106,21 @@ public sealed class Room
 
     private ServiceOffering? FindOffering(Guid serviceId) =>
         _offerings.Find(offering => offering.ServiceId == serviceId);
+
+    private static Error? ValidateServicePrice(decimal price)
+    {
+        if (price < 0)
+        {
+            return RoomErrors.ServicePriceNegative;
+        }
+
+        if (!Prices.IsInWholeKopiykas(price))
+        {
+            return RoomErrors.ServicePriceTooPrecise;
+        }
+
+        return null;
+    }
 
     private static Error? Validate(string name, int capacity, decimal hourlyPrice)
     {
@@ -127,6 +142,11 @@ public sealed class Room
         if (hourlyPrice < 0)
         {
             return RoomErrors.HourlyPriceNegative;
+        }
+
+        if (!Prices.IsInWholeKopiykas(hourlyPrice))
+        {
+            return RoomErrors.HourlyPriceTooPrecise;
         }
 
         return null;

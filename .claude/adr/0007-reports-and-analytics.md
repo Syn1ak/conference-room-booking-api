@@ -32,7 +32,7 @@ Several questions are open:
 |---|---|---|
 | **Revenue** | How much do we earn, and where from? | Rental, services, and total, for the whole period, per room, and per day or month. The total is split into earned and upcoming. Cancellations with their lost revenue. |
 | **Occupancy** | Which rooms sit empty, and are they the right size? | Per room and overall: booked hours against open hours, bookings, average attendees and how full the room is, and cancellations. |
-| **Demand** | Do the pricing bands work? | Booked hours against available hours for each weekday and time band (Morning, Standard, Peak, Evening). |
+| **Demand** | Do the pricing bands work? | Booked hours against available hours for each time band (Morning, Standard, Peak, Evening), over the whole period and on each weekday. |
 | **Service uptake** | Which extras sell? | Per catalog service: bookings that include it, the share of all bookings, and its revenue. |
 
 Together they cover money, capacity, and pricing. Demand builds on the pricing engine: it shows whether the evening discount fills rooms and whether peak hours are really in demand. Cancellations aren't a report of their own. They're fields in revenue and occupancy, next to the numbers they reduce.
@@ -67,7 +67,7 @@ All reports are `AdminOnly` and under the global rate limit.
 |---|---|---|---|
 | GET | `/api/reports/revenue?from&to&groupBy` | 200, revenue for the period, per room, and per day or month (`groupBy=day` or `month`, default `month`) | 400 invalid period, 401, 403 |
 | GET | `/api/reports/occupancy?from&to` | 200, occupancy per room and overall | 400, 401, 403 |
-| GET | `/api/reports/demand?from&to` | 200, a row for each weekday (Monday first) and time band | 400, 401, 403 |
+| GET | `/api/reports/demand?from&to` | 200, each time band over the whole period, and each weekday (Monday first) with its bands | 400, 401, 403 |
 | GET | `/api/reports/services?from&to` | 200, uptake per catalog service | 400, 401, 403 |
 
 Rooms and services are named with their current names. Neither can be deleted while a booking refers to it (ADR 0005), so every booking's room and services still exist. A month bucket that the period only partly covers counts only the days inside the period.

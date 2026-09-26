@@ -57,7 +57,10 @@
               "@fontsource-variable/inter/index.css",
               "@angular/cdk/overlay-prebuilt.css",
               "src/styles.css"
-            ]
+            ],
+            "security": {
+              "autoCsp": true
+            }
           },
           "configurations": {
             "production": {

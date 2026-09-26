@@ -41,6 +41,32 @@ public sealed class ClientAppTests(ApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task ClientPage_CarriesTheSecurityHeaders()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/rooms");
+
+        var policy = Assert.Single(response.Headers.GetValues("Content-Security-Policy"));
+        Assert.Contains("default-src 'self'", policy);
+        Assert.Contains("frame-ancestors 'none'", policy);
+        Assert.Contains("object-src 'none'", policy);
+        Assert.Equal("nosniff", Assert.Single(response.Headers.GetValues("X-Content-Type-Options")));
+        Assert.Equal("strict-origin-when-cross-origin", Assert.Single(response.Headers.GetValues("Referrer-Policy")));
+        Assert.True(response.Headers.Contains("Permissions-Policy"));
+    }
+
+    [Fact]
+    public async Task SwaggerUi_IsLeftWithoutTheClientsPolicy()
+    {
+        using var client = CreateClient();
+
+        var response = await client.GetAsync("/swagger/index.html");
+
+        Assert.False(response.Headers.Contains("Content-Security-Policy"));
+    }
+
+    [Fact]
     public async Task HashedBundle_IsServedAndCachedForAYear()
     {
         using var client = CreateClient();

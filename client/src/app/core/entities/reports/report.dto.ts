@@ -72,3 +72,16 @@ export interface IDemandReport {
   /** Monday first. */
   weekdays: { weekday: string; dayCount: number; bands: IBandDemand[] }[];
 }
+
+export interface IServiceUptakeReport {
+  period: IReportPeriod;
+  /** Confirmed bookings in the period, with or without services. */
+  bookingCount: number;
+  services: {
+    serviceId: string;
+    serviceName: string;
+    bookingCount: number;
+    attachRate: number;
+    revenue: number;
+  }[];
+}

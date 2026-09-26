@@ -4,6 +4,7 @@ import {
   IDemandReport,
   IOccupancyReport,
   IRevenueReport,
+  IServiceUptakeReport,
   TRevenueGrouping,
 } from '../../../entities/reports/report.dto';
 
@@ -34,6 +35,15 @@ export class ReportsClient {
   demandResource($query: Signal<TReportQuery>): HttpResourceRef<IDemandReport | undefined> {
     return httpResource<IDemandReport>(() => ({
       url: '/api/reports/demand',
+      params: { ...$query() },
+    }));
+  }
+
+  serviceUptakeResource(
+    $query: Signal<TReportQuery>,
+  ): HttpResourceRef<IServiceUptakeReport | undefined> {
+    return httpResource<IServiceUptakeReport>(() => ({
+      url: '/api/reports/services',
       params: { ...$query() },
     }));
   }

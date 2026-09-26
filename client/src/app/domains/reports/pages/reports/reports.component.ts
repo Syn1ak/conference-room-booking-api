@@ -9,6 +9,7 @@ import { WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
 import { DemandReportComponent } from '../../features/demand/demand-report.component';
 import { OccupancyReportComponent } from '../../features/occupancy/occupancy-report.component';
 import { RevenueReportComponent } from '../../features/revenue/revenue-report.component';
+import { ServiceUptakeReportComponent } from '../../features/service-uptake/service-uptake-report.component';
 import { parsePeriod, periodDays, TReportPeriod } from '../../utils/report-period.util';
 import { PeriodPickerComponent } from './view/components/period-picker.component';
 
@@ -29,6 +30,7 @@ import { PeriodPickerComponent } from './view/components/period-picker.component
     DemandReportComponent,
     OccupancyReportComponent,
     RevenueReportComponent,
+    ServiceUptakeReportComponent,
     WallDatePipe,
   ],
   templateUrl: './reports.component.html',
@@ -45,6 +47,7 @@ export default class ReportsComponent {
     { id: 'revenue', label: 'Revenue' },
     { id: 'occupancy', label: 'Occupancy' },
     { id: 'demand', label: 'Demand' },
+    { id: 'services', label: 'Services' },
   ];
   protected readonly $selectedReport = computed(() =>
     this.reports.some((report) => report.id === this.$report())

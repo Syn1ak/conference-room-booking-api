@@ -10,3 +10,26 @@
     {{ $days() === 1 ? 'day' : 'days' }}
   </p>
 </app-card>
+
+<div ngTabs class="mt-8">
+  <ul
+    ngTabList
+    class="flex gap-1 border-b border-line"
+    [selectedTab]="$selectedReport()"
+    (selectedTabChange)="showReport($event)"
+  >
+    @for (report of reports; track report.id) {
+      <li
+        ngTab
+        [value]="report.id"
+        class="-mb-px cursor-pointer rounded-t-lg border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-ink-muted outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-500 aria-selected:border-brand-600 aria-selected:text-ink dark:aria-selected:border-brand-400"
+      >
+        {{ report.label }}
+      </li>
+    }
+  </ul>
+
+  <div ngTabPanel value="revenue" class="pt-6 outline-none">
+    <ng-template ngTabContent><app-revenue-report [period]="$period()" /></ng-template>
+  </div>
+</div>

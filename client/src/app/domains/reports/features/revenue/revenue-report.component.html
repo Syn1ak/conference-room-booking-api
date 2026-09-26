@@ -1,0 +1,119 @@
+@if ($isLoading()) {
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
+    @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+      <app-card><app-skeleton class="h-4 w-24" /><app-skeleton class="mt-3 h-8 w-36" /></app-card>
+    }
+  </div>
+  <app-card class="mt-6"><app-skeleton class="h-56 w-full" /></app-card>
+} @else if (report.status() === 'error') {
+  <app-card [padded]="false">
+    <app-error-state title="Couldn't load the revenue report" (retry)="report.reload()" />
+  </app-card>
+} @else if ($data(); as data) {
+  <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <app-card>
+      <dt class="text-sm text-ink-muted">Confirmed revenue</dt>
+      <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
+        {{ data.confirmed.total | uah }}
+      </dd>
+      <dd class="mt-1 text-xs text-ink-subtle">{{ data.confirmed.bookingCount }} bookings</dd>
+    </app-card>
+    <app-card>
+      <dt class="text-sm text-ink-muted">Earned</dt>
+      <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
+        {{ data.earned.total | uah }}
+      </dd>
+      <dd class="mt-1 text-xs text-ink-subtle">Bookings that have ended</dd>
+    </app-card>
+    <app-card>
+      <dt class="text-sm text-ink-muted">Upcoming</dt>
+      <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
+        {{ data.upcoming.total | uah }}
+      </dd>
+      <dd class="mt-1 text-xs text-ink-subtle">On the books, not yet held</dd>
+    </app-card>
+    <app-card>
+      <dt class="text-sm text-ink-muted">Lost to cancellations</dt>
+      <dd class="mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums">
+        {{ data.cancellations.lostRevenue | uah }}
+      </dd>
+      <dd class="mt-1 text-xs text-ink-subtle">
+        {{ data.cancellations.count }} cancelled · {{ percent(data.cancellations.rate) }} of
+        bookings
+      </dd>
+    </app-card>
+  </dl>
+
+  <app-card class="mt-6">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <h3 class="text-sm font-semibold text-ink">
+        Revenue by {{ data.groupBy === 'Month' ? 'month' : 'day' }}
+      </h3>
+      <div
+        class="inline-flex rounded-xl bg-surface-muted p-0.5 ring-1 ring-line"
+        role="radiogroup"
+        aria-label="Group by"
+      >
+        @for (grouping of ['Day', 'Month']; track grouping) {
+          <button
+            type="button"
+            role="radio"
+            class="rounded-lg px-3 py-1 text-xs font-medium text-ink-muted aria-checked:bg-surface aria-checked:text-ink aria-checked:shadow-card"
+            [attr.aria-checked]="$groupBy() === grouping"
+            (click)="$groupBy.set($any(grouping))"
+          >
+            {{ grouping === 'Day' ? 'By day' : 'By month' }}
+          </button>
+        }
+      </div>
+    </div>
+    <app-bar-chart
+      [data]="$bars()"
+      [series]="series"
+      [format]="formatUah"
+      caption="Revenue of confirmed bookings"
+    />
+  </app-card>
+
+  <app-card class="mt-6 overflow-x-auto" [padded]="false">
+    <h3 class="px-6 pt-5 text-sm font-semibold text-ink">By room</h3>
+    <table class="mt-3 w-full text-sm whitespace-nowrap">
+      <thead
+        class="border-y border-line text-left text-xs font-medium tracking-wide text-ink-subtle uppercase"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Room</th>
+          <th scope="col" class="px-6 py-3 text-right">Bookings</th>
+          <th scope="col" class="px-6 py-3 text-right">Rental</th>
+          <th scope="col" class="px-6 py-3 text-right">Services</th>
+          <th scope="col" class="px-6 py-3 text-right">Total</th>
+          <th scope="col" class="px-6 py-3 text-right">Cancelled</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        @for (room of data.rooms; track room.roomId) {
+          <tr>
+            <th scope="row" class="px-6 py-3 text-left font-medium text-ink">
+              {{ room.roomName }}
+            </th>
+            <td class="px-6 py-3 text-right text-ink-muted tabular-nums">
+              {{ room.revenue.bookingCount }}
+            </td>
+            <td class="px-6 py-3 text-right text-ink-muted tabular-nums">
+              {{ room.revenue.rental | uah }}
+            </td>
+            <td class="px-6 py-3 text-right text-ink-muted tabular-nums">
+              {{ room.revenue.services | uah }}
+            </td>
+            <td class="px-6 py-3 text-right font-medium text-ink tabular-nums">
+              {{ room.revenue.total | uah }}
+            </td>
+            <td class="px-6 py-3 text-right text-ink-muted tabular-nums">
+              {{ room.cancellations.count }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-card>
+}

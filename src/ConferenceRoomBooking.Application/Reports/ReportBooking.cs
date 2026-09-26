@@ -14,7 +14,12 @@ public sealed record ReportBooking(
     int AttendeeCount,
     decimal RentalPrice,
     decimal TotalPrice,
-    IReadOnlyList<ReportBookedService> Services);
+    IReadOnlyList<ReportBookedService> Services)
+{
+    /// <summary>The day the booking takes place on, in venue time. Bookings never cross midnight.</summary>
+    public DateOnly DayIn(TimeZoneInfo venueTimeZone) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(Slot.Start, venueTimeZone).DateTime);
+}
 
 /// <summary>
 /// A service included in a booking, at the price in UAH charged for it.

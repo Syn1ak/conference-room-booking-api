@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
-import { API_PORT, apiEnvironment, APP_URL, CLIENT_PORT } from './e2e/support/e2e-environment';
+import { apiEnvironment, APP_URL } from './e2e/support/e2e-environment';
 
 /**
- * End-to-end tests against the real API and SQL Server. The API runs on its own port with its own database, which is
- * dropped and migrated again at the start of each run.
+ * End-to-end tests against the app as it's deployed: the published API serving the built client, on its own port, with
+ * its own SQL Server database, which is dropped at the start of each run.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -19,25 +19,14 @@ export default defineConfig({
     locale: 'en-GB',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: [
-    {
-      name: 'API',
-      command:
-        'node e2e/support/reset-database.mjs && ' +
-        'dotnet run --project ../src/ConferenceRoomBooking.Api --no-launch-profile',
-      url: `http://localhost:${API_PORT}/health`,
-      env: apiEnvironment,
-      timeout: 240_000,
-      reuseExistingServer: !process.env['CI'],
-      stdout: 'ignore',
-      stderr: 'pipe',
-    },
-    {
-      name: 'Client',
-      command: `npx ng serve --port ${CLIENT_PORT} --proxy-config e2e/proxy.e2e.json`,
-      url: APP_URL,
-      timeout: 240_000,
-      reuseExistingServer: !process.env['CI'],
-    },
-  ],
+  webServer: {
+    name: 'App',
+    command: 'e2e/support/serve-published.sh',
+    url: `${APP_URL}/health`,
+    env: apiEnvironment,
+    timeout: 360_000,
+    reuseExistingServer: !process.env['CI'],
+    stdout: 'ignore',
+    stderr: 'pipe',
+  },
 });

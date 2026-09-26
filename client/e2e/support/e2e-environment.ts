@@ -2,10 +2,9 @@ import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-/** Ports of their own, so end-to-end runs never reuse the development servers or database. */
-export const API_PORT = 5299;
-export const CLIENT_PORT = 4299;
-export const APP_URL = `http://localhost:${CLIENT_PORT}`;
+/** A port of its own, so end-to-end runs never reuse the development servers or database. */
+export const APP_PORT = 5299;
+export const APP_URL = `http://localhost:${APP_PORT}`;
 
 export const E2E_DATABASE = 'ConferenceRoomBookingE2E';
 
@@ -28,8 +27,10 @@ const sqlPort = process.env['MSSQL_PORT'] ?? '1433';
 
 /** Settings for the API under test. They override user-secrets, so the run doesn't depend on the developer's. */
 export const apiEnvironment: Record<string, string> = {
+  // Development migrates the fresh database at startup; deployments migrate as a separate step instead. The published
+  // client and its security headers are the same in every environment.
   ASPNETCORE_ENVIRONMENT: 'Development',
-  ASPNETCORE_URLS: `http://localhost:${API_PORT}`,
+  ASPNETCORE_URLS: APP_URL,
   ConnectionStrings__DefaultConnection:
     `Server=localhost,${sqlPort};Database=${E2E_DATABASE};User Id=sa;Password=${saPassword};` +
     'TrustServerCertificate=True',

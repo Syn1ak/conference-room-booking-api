@@ -1,0 +1,58 @@
+<section class="relative">
+  <div class="max-w-2xl">
+    <p class="text-sm font-semibold text-brand-600 dark:text-brand-400">Conference rooms in Kyiv</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+      Find a room for your meeting
+    </h1>
+    <p class="mt-3 text-base text-ink-muted sm:text-lg">
+      Pick a date, a time, and how many people are coming. We'll show the rooms that are free, with
+      the price for exactly that time.
+    </p>
+  </div>
+
+  <app-card class="mt-8">
+    <form
+      class="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_0.8fr_auto] lg:items-start"
+      [formRoot]="searchForm"
+    >
+      <app-form-field label="Date" [field]="searchForm.date">
+        <input appInput type="date" [formField]="searchForm.date" />
+      </app-form-field>
+
+      <app-form-field label="From" [field]="searchForm.from">
+        <select appInput [formField]="searchForm.from">
+          @for (time of facade.startOptions; track time) {
+            <option [value]="time">{{ time }}</option>
+          }
+        </select>
+      </app-form-field>
+
+      <app-form-field label="To" [field]="searchForm.to">
+        <select appInput [formField]="searchForm.to">
+          @for (time of facade.endOptions; track time) {
+            <option [value]="time">{{ time }}</option>
+          }
+        </select>
+      </app-form-field>
+
+      <app-form-field label="People" [field]="searchForm.capacity">
+        <input appInput type="number" inputmode="numeric" [formField]="searchForm.capacity" />
+      </app-form-field>
+
+      <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+        <span class="hidden text-sm font-medium lg:block" aria-hidden="true">&nbsp;</span>
+        <button app-button type="submit" class="w-full lg:w-auto">
+          <app-icon [icon]="icons.Search" class="size-4" />
+          Search
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-6 border-t border-line pt-5">
+      <p class="mb-3 text-xs font-medium tracking-wide text-ink-subtle uppercase">
+        Your time across the day's rates
+      </p>
+      <app-band-timeline [bands]="facade.bands" [highlight]="$highlight()" />
+    </div>
+  </app-card>
+</section>

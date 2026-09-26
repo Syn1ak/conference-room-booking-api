@@ -43,6 +43,10 @@ public static class BookingErrors
     public static Error ServiceNotOffered(Guid serviceId) => FieldError(
         "Booking.ServiceNotOffered", "ServiceIds", $"The room doesn't offer the service {serviceId}.");
 
+    public static readonly Error SlotTaken = Error.Conflict(
+        "Booking.SlotTaken",
+        "The room is already booked for some or all of this time.");
+
     public static readonly Error AlreadyCancelled = Error.Validation(
         "Booking.AlreadyCancelled",
         "The booking is already cancelled.");

@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IRoomBookingLock, SqlServerRoomBookingLock>();
     }
 
     private static void AddIdentityServices(this IServiceCollection services, IConfiguration configuration)

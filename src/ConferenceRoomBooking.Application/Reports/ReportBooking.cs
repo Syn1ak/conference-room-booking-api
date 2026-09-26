@@ -16,6 +16,9 @@ public sealed record ReportBooking(
     decimal TotalPrice,
     IReadOnlyList<ReportBookedService> Services)
 {
+    /// <summary>How long the booking lasts, in hours, which can be fractional.</summary>
+    public decimal Hours => (decimal)Slot.Duration.Ticks / TimeSpan.TicksPerHour;
+
     /// <summary>The day the booking takes place on, in venue time. Bookings never cross midnight.</summary>
     public DateOnly DayIn(TimeZoneInfo venueTimeZone) =>
         DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(Slot.Start, venueTimeZone).DateTime);

@@ -13,8 +13,33 @@ public sealed class ReportService(
     VenueTimeZone venueTimeZone,
     TimeProvider timeProvider)
 {
-    public async Task<Result<RevenueReport>> GetRevenueAsync(
-        DateOnly from, DateOnly to, RevenueGrouping groupBy, CancellationToken cancellationToken)
+    public Task<Result<RevenueReport>> GetRevenueAsync(
+        DateOnly from, DateOnly to, RevenueGrouping groupBy, CancellationToken cancellationToken) =>
+        BuildAsync(
+            from,
+            to,
+            async (period, bookings) => RevenueReport.Build(
+                period,
+                groupBy,
+                bookings,
+                await rooms.ListAsync(cancellationToken),
+                timeProvider.GetUtcNow(),
+                venueTimeZone.TimeZone),
+            cancellationToken);
+
+    public Task<Result<OccupancyReport>> GetOccupancyAsync(
+        DateOnly from, DateOnly to, CancellationToken cancellationToken) =>
+        BuildAsync(
+            from,
+            to,
+            async (period, bookings) => OccupancyReport.Build(period, bookings, await rooms.ListAsync(cancellationToken)),
+            cancellationToken);
+
+    private async Task<Result<TReport>> BuildAsync<TReport>(
+        DateOnly from,
+        DateOnly to,
+        Func<ReportPeriod, IReadOnlyList<ReportBooking>, Task<TReport>> build,
+        CancellationToken cancellationToken)
     {
         var period = ReportPeriod.Create(from, to, venueTimeZone.TimeZone);
         if (!period.IsSuccess)
@@ -23,9 +48,6 @@ public sealed class ReportService(
         }
 
         var bookings = await queries.ListBookingsAsync(period.Value, cancellationToken);
-        var allRooms = await rooms.ListAsync(cancellationToken);
-
-        return RevenueReport.Build(
-            period.Value, groupBy, bookings, allRooms, timeProvider.GetUtcNow(), venueTimeZone.TimeZone);
+        return await build(period.Value, bookings);
     }
 }

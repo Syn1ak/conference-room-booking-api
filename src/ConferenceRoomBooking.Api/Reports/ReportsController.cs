@@ -38,4 +38,21 @@ public sealed class ReportsController(ReportService reportService) : ControllerB
 
         return result.IsSuccess ? Ok(RevenueReportResponse.From(result.Value)) : this.ErrorResponse(result.Error);
     }
+
+    /// <summary>
+    /// Occupancy of each room and of all rooms together: booked hours of confirmed bookings against open hours
+    /// (06:00–23:00, 17 hours a day), the average attendee count, how full the room is against its current capacity,
+    /// and cancellations.
+    /// </summary>
+    /// <param name="period">The days the report covers.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    [HttpGet("occupancy")]
+    [ProducesResponseType<OccupancyReportResponse>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<OccupancyReportResponse>> Occupancy(
+        [FromQuery] ReportPeriodQuery period, CancellationToken cancellationToken)
+    {
+        var result = await reportService.GetOccupancyAsync(period.From!.Value, period.To!.Value, cancellationToken);
+
+        return result.IsSuccess ? Ok(OccupancyReportResponse.From(result.Value)) : this.ErrorResponse(result.Error);
+    }
 }

@@ -53,7 +53,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["@fontsource-variable/inter/index.css", "src/styles.css"]
+            "styles": [
+              "@fontsource-variable/inter/index.css",
+              "@angular/cdk/overlay-prebuilt.css",
+              "src/styles.css"
+            ]
           },
           "configurations": {
             "production": {

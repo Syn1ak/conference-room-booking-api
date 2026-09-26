@@ -47,6 +47,9 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString, sqlServer => sqlServer.EnableRetryOnFailure()));
 
+        // Reports whether the database answers, for GET /health.
+        services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();

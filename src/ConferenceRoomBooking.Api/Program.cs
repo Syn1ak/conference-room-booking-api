@@ -82,4 +82,8 @@ app.MapControllers();
 // The API description is public; without this the fallback policy would require a token to read it.
 app.MapOpenApi().AllowAnonymous();
 
+// 200 "Healthy" or 503 "Unhealthy", depending on whether the database answers. Monitoring and the platform may call it
+// as often as they need, so it isn't rate limited, and the body is only the status word.
+app.MapHealthChecks("/health").AllowAnonymous().DisableRateLimiting();
+
 app.Run();

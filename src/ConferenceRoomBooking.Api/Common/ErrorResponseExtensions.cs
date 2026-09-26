@@ -14,6 +14,7 @@ public static class ErrorResponseExtensions
     {
         ErrorType.Validation => controller.ValidationProblem(ToModelState(error)),
         ErrorType.Unauthorized => controller.Problem(title: error.Description, statusCode: StatusCodes.Status401Unauthorized),
+        ErrorType.Conflict => controller.Problem(title: error.Description, statusCode: StatusCodes.Status409Conflict),
         _ => throw new ArgumentOutOfRangeException(nameof(error), error.Type, "Unsupported error type."),
     };
 

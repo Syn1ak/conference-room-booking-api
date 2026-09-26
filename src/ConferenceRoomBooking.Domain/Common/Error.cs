@@ -10,6 +10,9 @@ public enum ErrorType
 
     /// <summary>The caller couldn't be authenticated, for example because of wrong credentials.</summary>
     Unauthorized,
+
+    /// <summary>The request clashes with the current state, for example a room name that is already taken.</summary>
+    Conflict,
 }
 
 /// <summary>
@@ -27,4 +30,7 @@ public sealed record Error(
 
     public static Error Unauthorized(string code, string description) =>
         new(code, description, ErrorType.Unauthorized);
+
+    public static Error Conflict(string code, string description) =>
+        new(code, description, ErrorType.Conflict);
 }

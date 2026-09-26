@@ -13,6 +13,9 @@ public static class ServiceErrors
     public static readonly Error NameTooLong = FieldError(
         "Service.NameTooLong", nameof(Service.Name), $"The service name can't be longer than {Service.NameMaxLength} characters.");
 
+    public static readonly Error NameTaken = Error.Conflict(
+        "Service.NameTaken", "A service with this name already exists.");
+
     public static readonly Error StandardPriceNegative = FieldError(
         "Service.StandardPriceNegative", nameof(Service.StandardPrice), "The standard price can't be negative.");
 

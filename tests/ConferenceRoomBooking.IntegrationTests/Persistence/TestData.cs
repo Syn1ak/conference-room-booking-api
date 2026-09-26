@@ -28,6 +28,14 @@ internal static class TestData
         Now,
         Kyiv).Value;
 
+    /// <summary>Adds the entities in a context of their own and saves them.</summary>
+    public static async Task SaveAsync(DatabaseFixture database, params object[] entities)
+    {
+        await using var dbContext = database.CreateDbContext();
+        dbContext.AddRange(entities);
+        await dbContext.SaveChangesAsync();
+    }
+
     /// <summary>Saves a user account for bookings to belong to and returns its id.</summary>
     public static async Task<Guid> CreateClientAsync(ApplicationDbContext dbContext)
     {

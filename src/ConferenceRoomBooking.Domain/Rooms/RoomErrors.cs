@@ -13,6 +13,9 @@ public static class RoomErrors
     public static readonly Error NameTooLong = FieldError(
         "Room.NameTooLong", nameof(Room.Name), $"The room name can't be longer than {Room.NameMaxLength} characters.");
 
+    public static readonly Error NameTaken = Error.Conflict(
+        "Room.NameTaken", "A room with this name already exists.");
+
     public static readonly Error CapacityNotPositive = FieldError(
         "Room.CapacityNotPositive", nameof(Room.Capacity), "The capacity must be at least 1 person.");
 

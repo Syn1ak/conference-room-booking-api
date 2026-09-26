@@ -55,7 +55,23 @@
     <app-card [padded]="false">
       <ul class="divide-y divide-line">
         @for (row of list.$rows(); track row.booking.id) {
-          <li><app-booking-row [row]="row" [showClient]="$isAdmin()" /></li>
+          <li>
+            <app-booking-row [row]="row" [showClient]="$isAdmin()">
+              @if (!$isAdmin() && row.state === 'upcoming') {
+                <button
+                  app-button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  class="text-red-600 hover:text-red-700 dark:text-red-400"
+                  [attr.aria-label]="'Cancel booking of ' + row.roomName"
+                  (click)="cancel(row)"
+                >
+                  Cancel
+                </button>
+              }
+            </app-booking-row>
+          </li>
         }
       </ul>
     </app-card>

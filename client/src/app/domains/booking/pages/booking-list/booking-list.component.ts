@@ -11,7 +11,8 @@ import { ErrorStateComponent } from '../../../../shared/ui/components/error-stat
 import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 import { PageHeaderComponent } from '../../../../shared/ui/components/page-header/page-header.component';
 import { SkeletonComponent } from '../../../../shared/ui/components/skeleton/skeleton.component';
-import { BookingListFacade } from './data-access/booking-list.facade';
+import { CancelBookingService } from '../../data-access/cancel-booking.service';
+import { BookingListFacade, TBookingRow } from './data-access/booking-list.facade';
 import { parsePage } from './utils/booking-state.util';
 import { BookingRowComponent } from './view/components/booking-row.component';
 
@@ -45,6 +46,7 @@ export default class BookingListComponent {
   protected readonly $page = computed(() => parsePage(this.$pageParam()));
   protected readonly $isAdmin = computed(() => this.session.$role() === 'Admin');
   protected readonly list = inject(BookingListFacade).createList(this.$page);
+  private readonly cancelBooking = inject(CancelBookingService);
 
   constructor() {
     // A page past the end, from an old link or after cancellations, moves to the last page that has bookings.
@@ -56,5 +58,12 @@ export default class BookingListComponent {
       .subscribe((totalPages) =>
         this.router.navigate([], { queryParams: { page: totalPages }, replaceUrl: true }),
       );
+  }
+
+  protected async cancel(row: TBookingRow): Promise<void> {
+    const outcome = await this.cancelBooking.cancel(row.booking, row.roomName);
+    if (outcome !== 'kept') {
+      this.list.reload();
+    }
   }
 }

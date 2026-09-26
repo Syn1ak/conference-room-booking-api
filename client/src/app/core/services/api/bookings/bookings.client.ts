@@ -21,6 +21,11 @@ export class BookingsClient {
     return this.http.post<IBookingConfirmation>('/api/bookings', request, { context });
   }
 
+  /** Cancels one of the signed-in client's bookings before it starts. */
+  cancel$(id: string, context?: HttpContext): Observable<IBooking> {
+    return this.http.post<IBooking>(`/api/bookings/${id}/cancel`, null, { context });
+  }
+
   /** A page of the bookings the caller may see: a client's own, or every client's for an admin. */
   bookingsResource(
     $query: Signal<TBookingsPageQuery>,

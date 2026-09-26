@@ -6,6 +6,7 @@ import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { IBooking } from '../../../../core/entities/bookings/booking.dto';
 import { testSession } from '../../../../core/testing/session.testing';
+import { ConfirmDialogService } from '../../../../shared/features/confirm-dialog/data-access/confirm-dialog.service';
 import BookingListComponent from './booking-list.component';
 
 const booking = (id: string, overrides: Partial<IBooking> = {}): IBooking => ({
@@ -34,7 +35,12 @@ describe('BookingListComponent', () => {
       JSON.stringify({ ...testSession({ role }), expiresAt: '2099-01-01T00:00:00Z' }),
     );
     const result = await render(BookingListComponent, {
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ConfirmDialogService, useValue: { confirm: () => Promise.resolve(true) } },
+      ],
       componentInputs: page ? { page } : {},
     });
     const http = TestBed.inject(HttpTestingController);
@@ -143,5 +149,39 @@ describe('BookingListComponent', () => {
     await view.fixture.whenStable();
 
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('offers to cancel only upcoming bookings, and only to clients', async () => {
+    const view = await setup('Client');
+    await answer(view, [
+      booking('upcoming'),
+      booking('past', { start: '2020-10-15T11:00:00+03:00', end: '2020-10-15T15:00:00+03:00' }),
+      booking('cancelled', { status: 'Cancelled' }),
+    ]);
+
+    expect(screen.getAllByRole('button', { name: /^Cancel booking/ })).toHaveLength(1);
+  });
+
+  it("doesn't let staff cancel clients' bookings", async () => {
+    const view = await setup('Admin');
+    await answer(view, [booking('b1')]);
+
+    expect(screen.queryByRole('button', { name: /^Cancel booking/ })).toBeNull();
+  });
+
+  it('cancels a booking and reloads the list', async () => {
+    const view = await setup('Client');
+    await answer(view, [booking('b1')]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel booking of Room A' }));
+    await new Promise((resolve) => setTimeout(resolve));
+    view.http
+      .expectOne({ method: 'POST', url: '/api/bookings/b1/cancel' })
+      .flush(booking('b1', { status: 'Cancelled' }));
+
+    await vi.waitFor(() =>
+      expect(view.http.match((r) => r.url === '/api/bookings')).toHaveLength(1),
+    );
+    expect(view.http.match('/api/rooms')).toHaveLength(1);
   });
 });

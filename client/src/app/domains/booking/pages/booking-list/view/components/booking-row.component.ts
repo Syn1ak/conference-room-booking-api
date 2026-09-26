@@ -75,8 +75,8 @@ const STATES: Record<TBookingState, { label: string; tone: TBadgeTone }> = {
 
     <div class="flex shrink-0 flex-col items-end gap-2">
       <p
-        class="font-semibold text-ink tabular-nums"
-        [class.text-ink-subtle]="$row().state === 'cancelled'"
+        class="font-semibold tabular-nums"
+        [class]="$row().state === 'cancelled' ? 'text-ink-subtle line-through' : 'text-ink'"
       >
         {{ $row().booking.totalPrice | uah }}
       </p>

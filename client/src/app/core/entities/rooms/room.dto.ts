@@ -13,3 +13,8 @@ export interface IRoom {
   hourlyPrice: number;
   services: IOfferedService[];
 }
+
+/** A room that is free for a searched time, with what renting it for that time costs before services. */
+export interface IAvailableRoom extends IRoom {
+  rentalPrice: number;
+}

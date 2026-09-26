@@ -56,3 +56,87 @@
     </div>
   </app-card>
 </section>
+
+<section
+  class="mt-10"
+  aria-labelledby="results-heading"
+  aria-live="polite"
+  [attr.aria-busy]="search.$isLoading()"
+>
+  @if (search.$query(); as query) {
+    <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+      <h2 id="results-heading" class="text-lg font-semibold tracking-tight text-ink">
+        @if (search.$isLoading()) {
+          Looking for free rooms…
+        } @else if (!search.$error()) {
+          {{ search.$rooms().length }}
+          {{ search.$rooms().length === 1 ? 'room is' : 'rooms are' }} free
+        } @else {
+          Search results
+        }
+      </h2>
+      <p class="text-sm text-ink-muted">
+        {{ query.date | wallDate }} · {{ query.from }}–{{ query.to }} · {{ query.capacity }}
+        {{ query.capacity === 1 ? 'person' : 'people' }}
+      </p>
+    </div>
+
+    @if (search.$isLoading()) {
+      <div class="grid gap-4">
+        @for (placeholder of [1, 2, 3]; track placeholder) {
+          <app-card>
+            <div class="flex justify-between gap-4">
+              <div class="flex-1">
+                <app-skeleton class="h-6 w-40" />
+                <app-skeleton class="mt-2 h-4 w-56" />
+                <app-skeleton class="mt-4 h-5 w-72 max-w-full" />
+              </div>
+              <app-skeleton class="h-8 w-32" />
+            </div>
+          </app-card>
+        }
+      </div>
+    } @else if (search.$error(); as error) {
+      @if (error.status === 400) {
+        <app-alert tone="warning" title="This time can't be searched">
+          @for (messages of error.fieldErrors | keyvalue; track messages.key) {
+            @for (message of messages.value; track message) {
+              <p>{{ message }}</p>
+            }
+          } @empty {
+            <p>{{ error.detail ?? error.title }}</p>
+          }
+        </app-alert>
+      } @else {
+        <app-card [padded]="false">
+          <app-error-state title="Couldn't search the rooms" (retry)="search.reload()" />
+        </app-card>
+      }
+    } @else if (search.$rooms().length === 0) {
+      <app-card [padded]="false">
+        <app-empty-state
+          title="No rooms are free then"
+          description="Every room big enough is booked for some of this time. Try another time or day, or a smaller group."
+        >
+          <app-icon appEmptyIcon [icon]="icons.SearchX" class="size-6" />
+        </app-empty-state>
+      </app-card>
+    } @else {
+      <ul class="grid gap-4">
+        @for (room of search.$rooms(); track room.id) {
+          <li><app-available-room-card [room]="room" [bands]="search.$bands()" /></li>
+        }
+      </ul>
+    }
+  } @else {
+    <h2 id="results-heading" class="sr-only">Search results</h2>
+    <app-card [padded]="false">
+      <app-empty-state
+        title="Search to see free rooms"
+        description="Rooms that are free for your time and big enough for your group appear here, priced for exactly that time."
+      >
+        <app-icon appEmptyIcon [icon]="icons.CalendarSearch" class="size-6" />
+      </app-empty-state>
+    </app-card>
+  }
+</section>

@@ -1,3 +1,4 @@
+import { KeyValuePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, input, linkedSignal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
@@ -10,15 +11,21 @@ import {
   validate,
 } from '@angular/forms/signals';
 import { Router } from '@angular/router';
-import { Search } from 'lucide';
+import { CalendarSearch, Search, SearchX } from 'lucide';
 import { filter } from 'rxjs';
 import { minutesOfDay, TSlotInput } from '../../../../core/utils/venue-time.util';
 import { BandTimelineComponent } from '../../../../shared/ui/components/band-timeline/band-timeline.component';
 import { ButtonComponent } from '../../../../shared/ui/components/button/button.component';
+import { AlertComponent } from '../../../../shared/ui/components/alert/alert.component';
 import { CardComponent } from '../../../../shared/ui/components/card/card.component';
+import { EmptyStateComponent } from '../../../../shared/ui/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../../../shared/ui/components/error-state/error-state.component';
 import { FormFieldComponent } from '../../../../shared/ui/components/form-field/form-field.component';
 import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
+import { SkeletonComponent } from '../../../../shared/ui/components/skeleton/skeleton.component';
 import { InputDirective } from '../../../../shared/ui/directives/input.directive';
+import { WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
+import { AvailableRoomCardComponent } from './view/components/available-room-card.component';
 import { FindRoomFacade } from './data-access/find-room.facade';
 import { TSearchQuery } from './models/search-query.types';
 import { isCompleteSearch, parseSearchQuery } from './utils/search-query.util';
@@ -32,7 +39,14 @@ import { isCompleteSearch, parseSearchQuery } from './utils/search-query.util';
   imports: [
     FormField,
     FormRoot,
+    AlertComponent,
+    AvailableRoomCardComponent,
     BandTimelineComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    SkeletonComponent,
+    WallDatePipe,
+    KeyValuePipe,
     ButtonComponent,
     CardComponent,
     FormFieldComponent,
@@ -43,7 +57,7 @@ import { isCompleteSearch, parseSearchQuery } from './utils/search-query.util';
   templateUrl: './find-room.component.html',
 })
 export default class FindRoomComponent {
-  protected readonly icons = { Search };
+  protected readonly icons = { CalendarSearch, Search, SearchX };
   protected readonly facade = inject(FindRoomFacade);
   private readonly router = inject(Router);
 
@@ -92,6 +106,20 @@ export default class FindRoomComponent {
       },
     },
   );
+
+  /** The search in the query string, once it's whole and bookable; results are shown for it. */
+  private readonly $activeQuery = computed(() => {
+    const raw = this.$rawQuery();
+    if (!isCompleteSearch(raw)) {
+      return null;
+    }
+
+    const query = parseSearchQuery(raw, this.facade.today(), this.facade.timeOptions);
+
+    return this.facade.isBookable(query) ? query : null;
+  });
+
+  protected readonly search = this.facade.createSearch(this.$activeQuery);
 
   protected readonly $highlight = computed(() => {
     const { from, to } = this.model();

@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, within } from '@testing-library/angular';
+import { IAvailableRoom } from '../../../../core/entities/rooms/room.dto';
 import userEvent from '@testing-library/user-event';
 import { VenueStore } from '../../../../core/services/venue/venue.store';
 import { TEST_VENUE } from '../../../../core/testing/venue.testing';
@@ -28,7 +29,7 @@ describe('FindRoomComponent', () => {
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    return { ...result, navigate };
+    return { ...result, navigate, http: TestBed.inject(HttpTestingController) };
   };
 
   const values = () => ({
@@ -116,17 +117,114 @@ describe('FindRoomComponent', () => {
   });
 
   it('follows the query string when the browser goes back or forward', async () => {
-    const { fixture } = await setup({
+    const { fixture, http } = await setup({
       date: '2026-10-15',
       from: '11:00',
       to: '15:00',
       capacity: '20',
     });
+    http.expectOne((r) => r.url === '/api/rooms/available').flush([]);
 
     fixture.componentRef.setInput('from', '09:00');
     fixture.componentRef.setInput('capacity', '4');
+    await new Promise((resolve) => setTimeout(resolve));
+    http
+      .expectOne((r) => r.url === '/api/rooms/available' && r.params.get('capacity') === '4')
+      .flush([]);
     await fixture.whenStable();
 
     expect(values()).toEqual({ date: '2026-10-15', from: '09:00', to: '15:00', capacity: '4' });
+  });
+
+  describe('results', () => {
+    const SEARCH = { date: '2026-10-15', from: '11:00', to: '15:00', capacity: '20' };
+    const ROOM_A: IAvailableRoom = {
+      id: 'a',
+      name: 'Room A',
+      capacity: 50,
+      hourlyPrice: 2000,
+      services: [{ serviceId: 'p', name: 'Projector', price: 500 }],
+      rentalPrice: 8600,
+    };
+    const results = () => screen.getByRole('region', { name: /free|Search results|Looking/ });
+
+    it('invites a search before there is one, without asking the server', async () => {
+      const { http } = await setup();
+
+      expect(screen.getByRole('heading', { name: 'Search to see free rooms' })).toBeInTheDocument();
+      http.expectNone(() => true);
+    });
+
+    it('asks for the free rooms with times in the venue offset', async () => {
+      const { http } = await setup(SEARCH);
+
+      const request = http.expectOne((r) => r.url === '/api/rooms/available');
+
+      expect(request.request.urlWithParams).toBe(
+        '/api/rooms/available?start=2026-10-15T11:00:00%2B03:00&end=2026-10-15T15:00:00%2B03:00&capacity=20',
+      );
+    });
+
+    it('lists the free rooms with the price for the time and the bands it touches', async () => {
+      const { http, fixture } = await setup(SEARCH);
+
+      http.expectOne((r) => r.url === '/api/rooms/available').flush([ROOM_A]);
+      await fixture.whenStable();
+
+      expect(screen.getByRole('heading', { name: '1 room is free' })).toBeInTheDocument();
+      const card = within(results()).getByRole('listitem');
+      expect(card).toHaveTextContent('Room A');
+      expect(card).toHaveTextContent('8,600.00 UAH');
+      expect(within(card).getByText('Standard')).toBeInTheDocument();
+      expect(within(card).getByText('Peak')).toBeInTheDocument();
+      expect(within(card).queryByText('Evening')).toBeNull();
+    });
+
+    it('says when no room is free', async () => {
+      const { http, fixture } = await setup(SEARCH);
+
+      http.expectOne((r) => r.url === '/api/rooms/available').flush([]);
+      await fixture.whenStable();
+
+      expect(screen.getByRole('heading', { name: 'No rooms are free then' })).toBeInTheDocument();
+    });
+
+    it("shows the server's reason when it refuses the search", async () => {
+      const { http, fixture } = await setup(SEARCH);
+
+      http
+        .expectOne((r) => r.url === '/api/rooms/available')
+        .flush(
+          {
+            title: 'One or more validation errors occurred.',
+            errors: { '': ['A booking must start in the future.'] },
+          },
+          { status: 400, statusText: 'Bad Request' },
+        );
+      await fixture.whenStable();
+
+      expect(screen.getByRole('alert')).toHaveTextContent('A booking must start in the future.');
+    });
+
+    it('offers to search again after a failure, and recovers', async () => {
+      const { http, fixture } = await setup(SEARCH);
+
+      http
+        .expectOne((r) => r.url === '/api/rooms/available')
+        .flush(null, { status: 503, statusText: 'Unavailable' });
+      await fixture.whenStable();
+      await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+      http.expectOne((r) => r.url === '/api/rooms/available').flush([ROOM_A]);
+      await fixture.whenStable();
+
+      expect(screen.getByRole('heading', { name: '1 room is free' })).toBeInTheDocument();
+    });
+
+    it("doesn't search for a time the server would refuse", async () => {
+      const { http } = await setup({ ...SEARCH, to: '10:00' });
+
+      http.expectNone((r) => r.url === '/api/rooms/available');
+      expect(screen.getByRole('heading', { name: 'Search to see free rooms' })).toBeInTheDocument();
+    });
   });
 });

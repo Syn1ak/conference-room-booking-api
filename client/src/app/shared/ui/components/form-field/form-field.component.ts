@@ -16,12 +16,13 @@ let nextId = 0;
   imports: [IconComponent],
   template: `
     <div class="flex items-baseline justify-between gap-2">
-      <label class="text-sm font-medium text-ink" [for]="controlId">
-        {{ $label() }}
+      <span class="text-sm font-medium text-ink">
+        <label [for]="controlId">{{ $label() }}</label>
         @if ($isRequired()) {
-          <span class="text-red-600 dark:text-red-400" aria-hidden="true">*</span>
+          <!-- Outside the label, so it isn't read as part of the name; the input itself says it's required. -->
+          <span class="ml-0.5 text-red-600 dark:text-red-400" aria-hidden="true">*</span>
         }
-      </label>
+      </span>
       <ng-content select="[appFieldAside]" />
     </div>
     <ng-content />

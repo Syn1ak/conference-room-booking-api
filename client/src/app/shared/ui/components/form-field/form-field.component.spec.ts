@@ -43,9 +43,10 @@ describe('FormFieldComponent', () => {
   it('labels the control and marks the field as required', async () => {
     await render(SignUpHostComponent);
 
-    const input = screen.getByLabelText(/Email/);
+    const input = screen.getByLabelText('Email');
 
     expect(input).toHaveAttribute('type', 'email');
+    expect(input).toBeRequired();
     expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
   });
 

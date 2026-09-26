@@ -14,7 +14,14 @@ import { TConfirmOptions } from '../confirm-dialog.types';
     <app-dialog-shell [title]="options.title" (dismiss)="dialogRef.close()">
       <p class="text-sm text-ink-muted">{{ options.message }}</p>
       <ng-container appDialogActions>
-        <button app-button variant="secondary" type="button" (click)="dialogRef.close()">
+        <!-- The safe choice gets the focus, so pressing Enter by accident keeps things as they are. -->
+        <button
+          app-button
+          cdkFocusInitial
+          variant="secondary"
+          type="button"
+          (click)="dialogRef.close()"
+        >
           {{ options.cancelLabel ?? 'Keep it' }}
         </button>
         <button

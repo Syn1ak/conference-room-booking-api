@@ -23,7 +23,7 @@ describe('ConfirmDialogService', () => {
 
   const settle = () => TestBed.inject(ApplicationRef).whenStable();
 
-  it('opens a dialog labelled by its title, with focus inside', async () => {
+  it('opens a dialog labelled by its title, with focus on the safe choice', async () => {
     void confirmDialog.confirm(options);
     await settle();
 
@@ -31,6 +31,7 @@ describe('ConfirmDialogService', () => {
 
     expect(dialog).toHaveTextContent('The slot becomes free for others.');
     expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    expect(document.activeElement).toHaveTextContent('Keep it');
   });
 
   it('resolves true when confirmed', async () => {

@@ -30,6 +30,7 @@ export class DialogService {
       ariaLabel: label,
       width: 'calc(100vw - 2rem)',
       maxWidth: MAX_WIDTH[size],
+      // An element marked cdkFocusInitial, such as a form's first field, gets the focus; otherwise the first tabbable.
       autoFocus: 'first-tabbable',
       restoreFocus: true,
       closeOnNavigation: true,

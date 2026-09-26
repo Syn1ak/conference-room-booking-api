@@ -1,2 +1,20 @@
-<router-outlet />
+@switch (venueStore.$status()) {
+  @case ('ready') {
+    <router-outlet />
+  }
+  @case ('error') {
+    <main class="flex min-h-dvh items-center justify-center p-4">
+      <app-error-state
+        title="Can't reach the booking service"
+        message="The server didn't answer. Check your connection, or try again in a moment."
+        (retry)="venueStore.load()"
+      />
+    </main>
+  }
+  @default {
+    <main class="flex min-h-dvh items-center justify-center">
+      <app-spinner label="Loading" class="size-6 text-brand-500" />
+    </main>
+  }
+}
 <app-toast-outlet />

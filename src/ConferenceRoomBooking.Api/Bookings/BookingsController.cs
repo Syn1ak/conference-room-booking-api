@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using ConferenceRoomBooking.Api.Auth;
 using ConferenceRoomBooking.Api.Common;
 using ConferenceRoomBooking.Application.Bookings;
@@ -38,6 +39,28 @@ public sealed class BookingsController(BookingService bookingService, VenueTimeZ
         var confirmation = BookingConfirmationResponse.From(result.Value, venueTimeZone.TimeZone);
 
         return CreatedAtAction(nameof(Get), new { id = confirmation.Id }, confirmation);
+    }
+
+    /// <summary>
+    /// Lists the bookings the caller may see, including cancelled ones, latest start first: a client gets their own
+    /// bookings, an admin gets every client's.
+    /// </summary>
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">How many bookings a page holds, at most 100.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    [HttpGet]
+    [ProducesResponseType<PageResponse<BookingResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PageResponse<BookingResponse>>> List(
+        [FromQuery, Range(1, Paging.MaxPage)] int page = 1,
+        [FromQuery, Range(1, Paging.MaxPageSize)] int pageSize = Paging.DefaultPageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var bookings = await bookingService.ListAsync(page, pageSize, cancellationToken);
+
+        return Ok(PageResponse<BookingResponse>.From(
+            bookings, booking => BookingResponse.From(booking, venueTimeZone.TimeZone)));
     }
 
     /// <summary>

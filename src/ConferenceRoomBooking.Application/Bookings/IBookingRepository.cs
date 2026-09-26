@@ -1,3 +1,4 @@
+using ConferenceRoomBooking.Application.Common;
 using ConferenceRoomBooking.Domain.Bookings;
 
 namespace ConferenceRoomBooking.Application.Bookings;
@@ -10,11 +11,17 @@ public interface IBookingRepository
 {
     Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
-    /// <summary>The client's bookings, including cancelled ones, ordered by start time.</summary>
-    Task<IReadOnlyList<Booking>> ListForClientAsync(Guid clientId, CancellationToken cancellationToken);
+    /// <summary>
+    /// A page of the client's bookings, including cancelled ones, latest start first.
+    /// <paramref name="pageNumber"/> starts at 1.
+    /// </summary>
+    Task<Page<Booking>> ListForClientAsync(
+        Guid clientId, int pageNumber, int pageSize, CancellationToken cancellationToken);
 
-    /// <summary>All bookings, including cancelled ones, ordered by start time.</summary>
-    Task<IReadOnlyList<Booking>> ListAsync(CancellationToken cancellationToken);
+    /// <summary>
+    /// A page of all bookings, including cancelled ones, latest start first. <paramref name="pageNumber"/> starts at 1.
+    /// </summary>
+    Task<Page<Booking>> ListAsync(int pageNumber, int pageSize, CancellationToken cancellationToken);
 
     /// <summary>
     /// Whether a confirmed booking of the room overlaps <paramref name="slot"/>. Cancelled bookings don't count,

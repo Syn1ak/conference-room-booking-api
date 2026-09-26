@@ -75,8 +75,17 @@ public sealed class BookingService(
             ? booking
             : BookingErrors.NotFound;
 
-    private bool CanSee(Booking booking) =>
-        currentUser.Roles.Contains(Roles.Admin) || booking.ClientId == currentUser.Id;
+    /// <summary>
+    /// A page of the bookings the current user may see: a client's own, or all of them for an admin.
+    /// </summary>
+    public Task<Page<Booking>> ListAsync(int pageNumber, int pageSize, CancellationToken cancellationToken) =>
+        IsAdmin
+            ? bookings.ListAsync(pageNumber, pageSize, cancellationToken)
+            : bookings.ListForClientAsync(currentUser.Id, pageNumber, pageSize, cancellationToken);
+
+    private bool IsAdmin => currentUser.Roles.Contains(Roles.Admin);
+
+    private bool CanSee(Booking booking) => IsAdmin || booking.ClientId == currentUser.Id;
 
     // The same calculation Booking.Create made, from the prices the booking saved.
     private PriceBreakdown CalculatePrice(Booking booking) =>

@@ -39,7 +39,7 @@ public sealed class BookingRepositoryTests(DatabaseFixture database) : IAsyncLif
     }
 
     [Fact]
-    public async Task ListForClientAsync_ReturnsOnlyThatClientsBookings_OrderedByStart()
+    public async Task ListForClientAsync_ReturnsOnlyThatClientsBookings_LatestStartFirst()
     {
         Guid otherClientId;
         await using (var dbContext = database.CreateDbContext())
@@ -52,9 +52,26 @@ public sealed class BookingRepositoryTests(DatabaseFixture database) : IAsyncLif
         await SaveBookingAsync(_room, otherClientId, TestData.Slot(10, 11), []);
 
         await using var verifyContext = database.CreateDbContext();
-        var bookings = await new BookingRepository(verifyContext).ListForClientAsync(_clientId, default);
+        var bookings = await new BookingRepository(verifyContext).ListForClientAsync(_clientId, 1, 10, default);
 
-        Assert.Equal([morning.Id, afternoon.Id], bookings.Select(booking => booking.Id));
+        Assert.Equal([afternoon.Id, morning.Id], bookings.Items.Select(booking => booking.Id));
+        Assert.Equal(2, bookings.TotalCount);
+    }
+
+    [Fact]
+    public async Task ListForClientAsync_ReturnsTheRequestedPage()
+    {
+        var bookings = new List<Booking>();
+        foreach (var startHour in new[] { 8, 10, 12, 14, 16 })
+        {
+            bookings.Add(await SaveBookingAsync(_room, _clientId, TestData.Slot(startHour, startHour + 1), []));
+        }
+
+        await using var verifyContext = database.CreateDbContext();
+        var page = await new BookingRepository(verifyContext).ListForClientAsync(_clientId, 2, 2, default);
+
+        Assert.Equal([bookings[2].Id, bookings[1].Id], page.Items.Select(booking => booking.Id));
+        Assert.Equal((2, 2, 5), (page.Number, page.Size, page.TotalCount));
     }
 
     [Fact]
@@ -70,7 +87,13 @@ public sealed class BookingRepositoryTests(DatabaseFixture database) : IAsyncLif
         var second = await SaveBookingAsync(_room, otherClientId, TestData.Slot(10, 11), []);
 
         await using var verifyContext = database.CreateDbContext();
-        var ids = (await new BookingRepository(verifyContext).ListAsync(default)).Select(booking => booking.Id).ToList();
+        var repository = new BookingRepository(verifyContext);
+        var firstPage = await repository.ListAsync(1, 100, default);
+        var ids = new List<Guid>();
+        for (var pageNumber = 1; ids.Count < firstPage.TotalCount; pageNumber++)
+        {
+            ids.AddRange((await repository.ListAsync(pageNumber, 100, default)).Items.Select(booking => booking.Id));
+        }
 
         Assert.Contains(first.Id, ids);
         Assert.Contains(second.Id, ids);

@@ -1,14 +1,21 @@
 import { Routes } from '@angular/router';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 
 export const routes: Routes = [
   {
-    path: 'no-access',
-    title: 'No access',
-    loadComponent: () => import('./domains/system/pages/no-access/no-access.component'),
-  },
-  {
-    path: '**',
-    title: 'Page not found',
-    loadComponent: () => import('./domains/system/pages/not-found/not-found.component'),
+    path: '',
+    component: MainLayoutComponent,
+    children: [
+      {
+        path: 'no-access',
+        title: 'No access',
+        loadComponent: () => import('./domains/system/pages/no-access/no-access.component'),
+      },
+      {
+        path: '**',
+        title: 'Page not found',
+        loadComponent: () => import('./domains/system/pages/not-found/not-found.component'),
+      },
+    ],
   },
 ];

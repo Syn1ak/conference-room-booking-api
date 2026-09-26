@@ -1,0 +1,63 @@
+@if (session.$user(); as user) {
+  <button
+    ngMenuTrigger
+    #origin
+    #trigger="ngMenuTrigger"
+    type="button"
+    class="flex items-center gap-2 rounded-xl p-1 pr-2 transition-colors hover:bg-surface-muted aria-expanded:bg-surface-muted"
+    [menu]="$userMenu()"
+    [attr.aria-label]="'Account: ' + user.email"
+  >
+    <span
+      class="flex size-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-semibold text-white dark:bg-brand-500"
+      aria-hidden="true"
+    >
+      {{ $initial() }}
+    </span>
+    <svg lucideChevronDown class="size-4 text-ink-subtle"></svg>
+  </button>
+
+  <ng-template
+    [cdkConnectedOverlayOpen]="trigger.expanded()"
+    [cdkConnectedOverlay]="{ origin, usePopover: 'inline' }"
+    [cdkConnectedOverlayPositions]="[
+      { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
+    ]"
+    cdkAttachPopoverAsChild
+  >
+    <div
+      ngMenu
+      #userMenu="ngMenu"
+      class="w-64 animate-pop-in rounded-2xl border border-line bg-surface p-1.5 shadow-float data-[visible=false]:hidden"
+      (itemSelected)="onSelect($event)"
+    >
+      <ng-template ngMenuContent>
+        <div class="px-3 pt-2 pb-3">
+          <p class="truncate text-sm font-medium text-ink">{{ user.email }}</p>
+          <app-badge class="mt-1.5" [tone]="user.role === 'Admin' ? 'brand' : 'neutral'">
+            {{ user.role === 'Admin' ? 'Staff' : 'Client' }}
+          </app-badge>
+        </div>
+        <div role="separator" aria-orientation="horizontal" class="my-1 border-t border-line"></div>
+        @if (user.role === 'Client') {
+          <div
+            ngMenuItem
+            value="bookings"
+            class="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:bg-surface-muted"
+          >
+            <svg lucideCalendarDays class="size-4 text-ink-subtle"></svg>
+            My bookings
+          </div>
+        }
+        <div
+          ngMenuItem
+          value="sign-out"
+          class="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:bg-surface-muted"
+        >
+          <svg lucideLogOut class="size-4 text-ink-subtle"></svg>
+          Sign out
+        </div>
+      </ng-template>
+    </div>
+  </ng-template>
+}

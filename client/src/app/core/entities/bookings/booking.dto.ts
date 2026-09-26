@@ -43,3 +43,20 @@ export interface IBookingConfirmation {
   rentalPrice: number;
   totalPrice: number;
 }
+
+/** A booking with the prices saved when it was made. */
+export interface IBooking {
+  id: string;
+  roomId: string;
+  clientId: string;
+  start: string;
+  end: string;
+  durationMinutes: number;
+  attendeeCount: number;
+  status: TBookingStatus;
+  cancelledAt: string | null;
+  roomHourlyPrice: number;
+  services: IBookedService[];
+  rentalPrice: number;
+  totalPrice: number;
+}

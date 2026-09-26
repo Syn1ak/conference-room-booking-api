@@ -1,4 +1,5 @@
 import { Route } from '@angular/router';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const ROUTES: Route[] = [
   {
@@ -6,5 +7,11 @@ export const ROUTES: Route[] = [
     pathMatch: 'full',
     title: 'Find a room',
     loadComponent: () => import('./pages/find-room/find-room.component'),
+  },
+  {
+    path: 'bookings',
+    title: 'Bookings',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/booking-list/booking-list.component'),
   },
 ];

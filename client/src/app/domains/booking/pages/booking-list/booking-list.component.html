@@ -1,0 +1,95 @@
+<app-page-header
+  [title]="$isAdmin() ? 'Bookings' : 'My bookings'"
+  [description]="
+    $isAdmin()
+      ? 'Every client\'s bookings, latest first.'
+      : 'Your upcoming and past bookings, latest first.'
+  "
+>
+  @if (!$isAdmin()) {
+    <a app-button appPageActions routerLink="/">
+      <app-icon [icon]="icons.CalendarPlus" class="size-4" />
+      Book a room
+    </a>
+  }
+</app-page-header>
+
+<section class="mt-8" aria-label="Bookings" [attr.aria-busy]="list.$isLoading()">
+  @if (list.$isLoading()) {
+    <app-card [padded]="false" class="divide-y divide-line">
+      @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+        <div class="flex items-center gap-4 px-4 py-4 sm:px-6">
+          <app-skeleton class="size-14 rounded-xl" />
+          <div class="flex-1">
+            <app-skeleton class="h-5 w-40" />
+            <app-skeleton class="mt-2 h-4 w-64 max-w-full" />
+          </div>
+          <app-skeleton class="h-5 w-24" />
+        </div>
+      }
+    </app-card>
+  } @else if (list.$hasError()) {
+    <app-card [padded]="false">
+      <app-error-state title="Couldn't load the bookings" (retry)="list.reload()" />
+    </app-card>
+  } @else if (list.$rows().length === 0) {
+    <app-card [padded]="false">
+      @if ($isAdmin()) {
+        <app-empty-state
+          title="No bookings yet"
+          description="Bookings appear here as soon as clients make them."
+        >
+          <app-icon appEmptyIcon [icon]="icons.CalendarX" class="size-6" />
+        </app-empty-state>
+      } @else {
+        <app-empty-state
+          title="No bookings yet"
+          description="Find a free room for your next meeting and book it in a minute."
+        >
+          <app-icon appEmptyIcon [icon]="icons.CalendarX" class="size-6" />
+          <a app-button routerLink="/">Find a room</a>
+        </app-empty-state>
+      }
+    </app-card>
+  } @else {
+    <app-card [padded]="false">
+      <ul class="divide-y divide-line">
+        @for (row of list.$rows(); track row.booking.id) {
+          <li><app-booking-row [row]="row" [showClient]="$isAdmin()" /></li>
+        }
+      </ul>
+    </app-card>
+
+    @if (list.$totalPages() > 1) {
+      <nav class="mt-6 flex items-center justify-between gap-4" aria-label="Pages">
+        <a
+          app-button
+          variant="secondary"
+          size="sm"
+          routerLink="."
+          [queryParams]="{ page: $page() - 1 }"
+          [disabled]="$page() <= 1"
+          [attr.tabindex]="$page() <= 1 ? -1 : null"
+        >
+          <app-icon [icon]="icons.ChevronLeft" class="size-4" />
+          Previous
+        </a>
+        <p class="text-sm text-ink-muted" aria-live="polite">
+          Page {{ $page() }} of {{ list.$totalPages() }}
+        </p>
+        <a
+          app-button
+          variant="secondary"
+          size="sm"
+          routerLink="."
+          [queryParams]="{ page: $page() + 1 }"
+          [disabled]="$page() >= list.$totalPages()"
+          [attr.tabindex]="$page() >= list.$totalPages() ? -1 : null"
+        >
+          Next
+          <app-icon [icon]="icons.ChevronRight" class="size-4" />
+        </a>
+      </nav>
+    }
+  }
+</section>

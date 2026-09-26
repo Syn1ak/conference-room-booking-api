@@ -10,6 +10,8 @@ export type TBookRoomData = {
   to: string;
   /** How many people the search was for; the attendee count starts there. */
   capacity: number;
+  /** Refreshes the search results behind the dialog, when they turn out to be out of date. */
+  refreshResults: () => void;
 };
 
 /** How the dialog ended: with a booking, or closed without one. */

@@ -1,6 +1,8 @@
+import { HttpContext } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { IBookingConfirmation } from '../../../../../core/entities/bookings/booking.dto';
+import { SKIP_ERROR_TOAST } from '../../../../../core/interceptors/error.interceptor';
 import { BookingsClient } from '../../../../../core/services/api/bookings/bookings.client';
 import { VenueStore } from '../../../../../core/services/venue/venue.store';
 import { toVenueIso } from '../../../../../core/utils/venue-time.util';
@@ -22,14 +24,17 @@ export class BookRoomService {
   ): Promise<IBookingConfirmation> {
     const { timeZone } = this.venue.venue;
 
+    const request = {
+      roomId: data.room.id,
+      start: toVenueIso(data.date, data.from, timeZone),
+      end: toVenueIso(data.date, data.to, timeZone),
+      attendeeCount,
+      serviceIds,
+    };
+
+    // The dialog explains every failure itself, next to the booking it's about.
     return firstValueFrom(
-      this.bookings.create$({
-        roomId: data.room.id,
-        start: toVenueIso(data.date, data.from, timeZone),
-        end: toVenueIso(data.date, data.to, timeZone),
-        attendeeCount,
-        serviceIds,
-      }),
+      this.bookings.create$(request, new HttpContext().set(SKIP_ERROR_TOAST, true)),
     );
   }
 }

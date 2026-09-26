@@ -15,7 +15,6 @@ import { CalendarSearch, Search, SearchX } from 'lucide';
 import { filter } from 'rxjs';
 import { IAvailableRoom } from '../../../../core/entities/rooms/room.dto';
 import { SessionStore } from '../../../../core/services/session/session.store';
-import { ToastService } from '../../../../core/services/toast/toast.service';
 import { minutesOfDay, TSlotInput } from '../../../../core/utils/venue-time.util';
 import { BandTimelineComponent } from '../../../../shared/ui/components/band-timeline/band-timeline.component';
 import { ButtonComponent } from '../../../../shared/ui/components/button/button.component';
@@ -27,9 +26,8 @@ import { FormFieldComponent } from '../../../../shared/ui/components/form-field/
 import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 import { SkeletonComponent } from '../../../../shared/ui/components/skeleton/skeleton.component';
 import { InputDirective } from '../../../../shared/ui/directives/input.directive';
-import { formatWallDate, WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
+import { WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
 import { AvailableRoomCardComponent } from './view/components/available-room-card.component';
-import { formatUah } from '../../../../shared/ui/pipes/uah.pipe';
 import { BookRoomDialogService } from '../../features/book-room/data-access/book-room-dialog.service';
 import { FindRoomFacade } from './data-access/find-room.facade';
 import { TSearchQuery } from './models/search-query.types';
@@ -67,7 +65,6 @@ export default class FindRoomComponent {
   protected readonly facade = inject(FindRoomFacade);
   private readonly router = inject(Router);
   private readonly bookRoomDialog = inject(BookRoomDialogService);
-  private readonly toasts = inject(ToastService);
   protected readonly session = inject(SessionStore);
 
   readonly $date = input<string | undefined>(undefined, { alias: 'date' });
@@ -157,14 +154,8 @@ export default class FindRoomComponent {
       return;
     }
 
-    const result = await this.bookRoomDialog.open({ room, ...query });
-    if (result) {
-      const { booking } = result;
-      this.toasts.success(
-        `${room.name} is booked`,
-        `${formatWallDate(booking.start)} · ${query.from}–${query.to} · ${formatUah(booking.totalPrice)}`,
-      );
-      this.search.reload();
-    }
+    await this.bookRoomDialog.open({ room, ...query, refreshResults: () => this.search.reload() });
+    // Closed with a booking or without one, by any means: refresh, since the room may be taken now.
+    this.search.reload();
   }
 }

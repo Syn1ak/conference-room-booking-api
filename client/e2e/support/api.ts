@@ -156,6 +156,17 @@ export class Api {
     return response.json();
   }
 
+  async bookings(
+    account: TAccount,
+  ): Promise<{ items: (TBooking & { roomId: string })[]; totalCount: number }> {
+    const response = await this.request.get('/api/bookings?pageSize=100', {
+      headers: auth(account),
+    });
+    expect(response.status(), await response.text()).toBe(200);
+
+    return response.json();
+  }
+
   async cancel(client: TAccount, booking: TBooking): Promise<void> {
     const response = await this.request.post(`/api/bookings/${booking.id}/cancel`, {
       headers: auth(client),

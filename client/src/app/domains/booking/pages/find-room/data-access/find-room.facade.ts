@@ -64,7 +64,8 @@ export class FindRoomFacade {
     return {
       $query,
       $rooms: computed<IAvailableRoom[]>(() => (rooms.hasValue() ? rooms.value() : [])),
-      $isLoading: computed(() => rooms.isLoading()),
+      // Only a new search shows placeholders; a refresh keeps the current results on screen until it's done.
+      $isLoading: computed(() => rooms.status() === 'loading'),
       $error: computed(() => (rooms.status() === 'error' ? toApiError(rooms.error()) : null)),
       $bands: computed(() => {
         const query = $query();

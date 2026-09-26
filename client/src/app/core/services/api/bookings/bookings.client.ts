@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
@@ -11,7 +11,7 @@ import {
 export class BookingsClient {
   private readonly http = inject(HttpClient);
 
-  create$(request: ICreateBookingRequest): Observable<IBookingConfirmation> {
-    return this.http.post<IBookingConfirmation>('/api/bookings', request);
+  create$(request: ICreateBookingRequest, context?: HttpContext): Observable<IBookingConfirmation> {
+    return this.http.post<IBookingConfirmation>('/api/bookings', request, { context });
   }
 }

@@ -31,9 +31,45 @@ test.describe('booking a room', () => {
     await dialog.getByRole('checkbox', { name: /Wi-Fi/ }).check();
     await dialog.getByRole('button', { name: 'Book for 9,400.00 UAH' }).click();
 
+    // The worked example of ADR 0004: 11:00–15:00 in a 2000 UAH/h room with a projector and Wi-Fi.
+    await expect(dialog.getByRole('heading', { name: "You're booked" })).toBeVisible();
+    const rows = dialog.getByRole('row');
+    await expect(rows.nth(1)).toContainText('Standard');
+    await expect(rows.nth(1)).toContainText('2,000.00 UAH');
+    await expect(rows.nth(2)).toContainText('Peak');
+    await expect(rows.nth(2)).toContainText('×1.15');
+    await expect(rows.nth(2)).toContainText('4,600.00 UAH');
+    await expect(rows.nth(3)).toContainText('2,000.00 UAH');
+    await expect(dialog.getByRole('row', { name: /Total/ })).toContainText('9,400.00 UAH');
+
+    await dialog.getByRole('button', { name: 'Done' }).click();
     await expect(dialog).toBeHidden();
-    await expect(page.getByText(`${room.name} is booked`)).toBeVisible();
     await expect(card).toHaveCount(0);
+  });
+
+  test('a double click books once', async ({ page, api }) => {
+    const admin = await api.loginAdmin();
+    const room = await api.createRoom(admin, { name: uniqueName('Double'), capacity: 5 });
+    const client = await api.registerClient();
+    await signIn(page, client);
+    await page.route('**/api/bookings', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      await route.continue();
+    });
+
+    await page.goto(`/?date=${randomFutureDate()}&from=16:00&to=17:00&capacity=2`);
+    const card = page.locator('app-available-room-card', {
+      has: page.getByRole('heading', { name: room.name }),
+    });
+    await card.getByRole('button', { name: 'Book' }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /^Book for/ })
+      .dblclick();
+
+    await expect(page.getByRole('heading', { name: "You're booked" })).toBeVisible();
+    const { items } = await api.bookings(client);
+    expect(items.filter((booking) => booking.roomId === room.id)).toHaveLength(1);
   });
 
   test('a visitor is asked to sign in and comes back to the same search', async ({ page, api }) => {

@@ -1,91 +1,115 @@
-<app-dialog-shell
-  [title]="'Book ' + data.room.name"
-  [description]="
-    (data.date | wallDate) +
-    ' · ' +
-    data.from +
-    '–' +
-    data.to +
-    ' · ' +
-    (durationMinutes | duration)
-  "
-  (dismiss)="dialogRef.close()"
->
-  <form id="book-room-form" class="flex flex-col gap-5" [formRoot]="bookingForm">
-    @if ($formErrors().length > 0) {
-      <app-alert tone="danger">
-        @for (message of $formErrors(); track message) {
-          <p>{{ message }}</p>
-        }
-      </app-alert>
-    }
-
-    <app-form-field
-      label="Attendees"
-      [hint]="'The room holds up to ' + data.room.capacity + ' people.'"
-      [field]="bookingForm.attendeeCount"
+@if ($booking(); as booking) {
+  <app-dialog-shell title="You're booked" [description]="data.room.name" (dismiss)="close()">
+    <div
+      class="flex items-start gap-3 rounded-xl bg-emerald-50 p-4 text-emerald-900 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-100 dark:ring-emerald-500/30"
     >
-      <input
-        appInput
-        type="number"
-        inputmode="numeric"
-        class="max-w-40"
-        [formField]="bookingForm.attendeeCount"
-      />
-    </app-form-field>
-
-    @if (data.room.services.length > 0) {
-      <fieldset>
-        <legend class="text-sm font-medium text-ink">Services</legend>
-        <p class="mt-0.5 text-xs text-ink-subtle">Each is charged once per booking.</p>
-        <div class="mt-3 grid gap-2">
-          @for (service of data.room.services; track service.serviceId; let index = $index) {
-            <label
-              class="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-3.5 py-2.5 transition-colors hover:bg-surface-muted has-checked:border-brand-500 has-checked:bg-brand-50/60 dark:has-checked:bg-brand-500/10"
-            >
-              <input
-                type="checkbox"
-                appCheckbox
-                [formField]="bookingForm.services[index].selected"
-              />
-              <span class="flex-1 text-sm text-ink">{{ service.name }}</span
-              >{{ ' ' }}
-              <span class="text-sm text-ink-muted tabular-nums">{{ service.price | uah }}</span>
-            </label>
-          }
-        </div>
-      </fieldset>
-    }
-
-    <div class="rounded-xl bg-surface-muted/60 p-4 ring-1 ring-line">
-      <dl class="grid gap-2 text-sm">
-        <div class="flex justify-between gap-4">
-          <dt class="text-ink-muted">Room rental, {{ durationMinutes | duration }}</dt>
-          <dd class="text-ink tabular-nums">{{ data.room.rentalPrice | uah }}</dd>
-        </div>
-        @for (service of $selectedServices(); track service.serviceId) {
-          <div class="flex justify-between gap-4">
-            <dt class="text-ink-muted">{{ service.name }}</dt>
-            <dd class="text-ink tabular-nums">{{ service.price | uah }}</dd>
-          </div>
-        }
-        <div
-          class="mt-1 flex justify-between gap-4 border-t border-line pt-3 text-base font-semibold"
-        >
-          <dt class="text-ink">Total</dt>
-          <dd class="text-ink tabular-nums" aria-live="polite">{{ $total() | uah }}</dd>
-        </div>
-      </dl>
-      <p class="mt-2 text-xs text-ink-subtle">
-        The rental includes the time-of-day rates. The server confirms the final price.
+      <app-icon [icon]="icons.CircleCheck" class="mt-0.5 size-5 shrink-0" />
+      <p class="text-sm">
+        {{ data.room.name }} is yours on
+        <span class="font-medium">{{ booking.start | wallDate }}</span
+        >, from {{ data.from }} to {{ data.to }}, for {{ booking.attendeeCount }}
+        {{ booking.attendeeCount === 1 ? 'person' : 'people' }}.
       </p>
     </div>
-  </form>
+    <h3 class="mt-5 mb-2 text-sm font-semibold text-ink">How the price adds up</h3>
+    <app-booking-breakdown [booking]="booking" />
+    <ng-container appDialogActions>
+      <a app-button variant="secondary" routerLink="/bookings" (click)="close()"
+        >View my bookings</a
+      >
+      <button app-button type="button" (click)="close()">Done</button>
+    </ng-container>
+  </app-dialog-shell>
+} @else {
+  <app-dialog-shell
+    [title]="'Book ' + data.room.name"
+    [description]="
+      (data.date | wallDate) +
+      ' · ' +
+      data.from +
+      '–' +
+      data.to +
+      ' · ' +
+      (durationMinutes | duration)
+    "
+    (dismiss)="close()"
+  >
+    <form id="book-room-form" class="flex flex-col gap-5" [formRoot]="bookingForm">
+      @if ($formErrors().length > 0) {
+        <app-alert tone="danger">
+          @for (message of $formErrors(); track message) {
+            <p>{{ message }}</p>
+          }
+        </app-alert>
+      }
 
-  <ng-container appDialogActions>
-    <button app-button variant="secondary" type="button" (click)="dialogRef.close()">Cancel</button>
-    <button app-button type="submit" form="book-room-form" [loading]="bookingForm().submitting()">
-      Book for {{ $total() | uah }}
-    </button>
-  </ng-container>
-</app-dialog-shell>
+      <app-form-field
+        label="Attendees"
+        [hint]="'The room holds up to ' + data.room.capacity + ' people.'"
+        [field]="bookingForm.attendeeCount"
+      >
+        <input
+          appInput
+          type="number"
+          inputmode="numeric"
+          class="max-w-40"
+          [formField]="bookingForm.attendeeCount"
+        />
+      </app-form-field>
+
+      @if (data.room.services.length > 0) {
+        <fieldset>
+          <legend class="text-sm font-medium text-ink">Services</legend>
+          <p class="mt-0.5 text-xs text-ink-subtle">Each is charged once per booking.</p>
+          <div class="mt-3 grid gap-2">
+            @for (service of data.room.services; track service.serviceId; let index = $index) {
+              <label
+                class="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-3.5 py-2.5 transition-colors hover:bg-surface-muted has-checked:border-brand-500 has-checked:bg-brand-50/60 dark:has-checked:bg-brand-500/10"
+              >
+                <input
+                  type="checkbox"
+                  appCheckbox
+                  [formField]="bookingForm.services[index].selected"
+                />
+                <span class="flex-1 text-sm text-ink">{{ service.name }}</span
+                >{{ ' ' }}
+                <span class="text-sm text-ink-muted tabular-nums">{{ service.price | uah }}</span>
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
+
+      <div class="rounded-xl bg-surface-muted/60 p-4 ring-1 ring-line">
+        <dl class="grid gap-2 text-sm">
+          <div class="flex justify-between gap-4">
+            <dt class="text-ink-muted">Room rental, {{ durationMinutes | duration }}</dt>
+            <dd class="text-ink tabular-nums">{{ data.room.rentalPrice | uah }}</dd>
+          </div>
+          @for (service of $selectedServices(); track service.serviceId) {
+            <div class="flex justify-between gap-4">
+              <dt class="text-ink-muted">{{ service.name }}</dt>
+              <dd class="text-ink tabular-nums">{{ service.price | uah }}</dd>
+            </div>
+          }
+          <div
+            class="mt-1 flex justify-between gap-4 border-t border-line pt-3 text-base font-semibold"
+          >
+            <dt class="text-ink">Total</dt>
+            <dd class="text-ink tabular-nums" aria-live="polite">{{ $total() | uah }}</dd>
+          </div>
+        </dl>
+        <p class="mt-2 text-xs text-ink-subtle">
+          The rental includes the time-of-day rates. The server confirms the final price.
+        </p>
+      </div>
+    </form>
+
+    <ng-container appDialogActions>
+      <button app-button variant="secondary" type="button" (click)="close()">Cancel</button>
+      <button app-button type="submit" form="book-room-form" [loading]="bookingForm().submitting()">
+        Book for {{ $total() | uah }}
+      </button>
+    </ng-container>
+  </app-dialog-shell>
+}

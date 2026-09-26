@@ -1,4 +1,5 @@
 using ConferenceRoomBooking.Application.Auth;
+using ConferenceRoomBooking.Application.Rooms;
 using ConferenceRoomBooking.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ public static class DependencyInjection
     {
         services.AddScoped<AuthService>();
         services.AddScoped<ServiceCatalogService>();
+        services.AddScoped<RoomService>();
 
         return services;
     }

@@ -16,6 +16,9 @@ public static class RoomErrors
     public static readonly Error NameTaken = Error.Conflict(
         "Room.NameTaken", "A room with this name already exists.");
 
+    public static readonly Error NotFound = Error.NotFound(
+        "Room.NotFound", "The room doesn't exist.");
+
     public static readonly Error CapacityNotPositive = FieldError(
         "Room.CapacityNotPositive", nameof(Room.Capacity), "The capacity must be at least 1 person.");
 

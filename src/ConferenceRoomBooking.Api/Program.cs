@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using ConferenceRoomBooking.Api.Auth;
+using ConferenceRoomBooking.Api.Client;
 using ConferenceRoomBooking.Api.Common;
 using ConferenceRoomBooking.Api.OpenApi;
 using ConferenceRoomBooking.Api.RateLimiting;
@@ -64,6 +65,10 @@ app.UseStatusCodePages();
 
 app.UseHttpsRedirection();
 
+// The built Angular client, served from the same origin as the API. Static files come before authentication, so the
+// fallback policy doesn't apply to them.
+app.UseClientApp();
+
 // API documentation is served in every environment, so the deployed API can be explored in Swagger UI.
 // Swagger UI's static files are served before authorization, so they aren't affected by the fallback policy.
 app.UseSwaggerUI(options =>
@@ -71,6 +76,10 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/openapi/v1.json", "Conference Room Booking API v1");
     options.DocumentTitle = "Conference Room Booking API";
 });
+
+// Routing comes after the static files (the client and Swagger UI), which step aside once an endpoint has matched, and
+// the client's fallback endpoint matches every path.
+app.UseRouting();
 
 app.UseAuthentication();
 // After authentication, so authenticated users are limited per account rather than per IP address.
@@ -85,5 +94,7 @@ app.MapOpenApi().AllowAnonymous();
 // 200 "Healthy" or 503 "Unhealthy", depending on whether the database answers. Monitoring and the platform may call it
 // as often as they need, so it isn't rate limited, and the body is only the status word.
 app.MapHealthChecks("/health").AllowAnonymous().DisableRateLimiting();
+
+app.MapClientAppFallback();
 
 app.Run();

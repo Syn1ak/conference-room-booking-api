@@ -17,6 +17,27 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
   </ItemGroup>
 
+  <!--
+    Publishing builds the Angular client and ships it in wwwroot, so one deployment serves both from the same origin.
+    Pass -p:SkipClientBuild=true to publish the API alone.
+  -->
+  <PropertyGroup>
+    <ClientRoot>$(MSBuildThisFileDirectory)..\..\client\</ClientRoot>
+  </PropertyGroup>
+
+  <Target Name="PublishClientApp" AfterTargets="ComputeFilesToPublish" Condition="'$(SkipClientBuild)' != 'true'">
+    <Exec Command="npm ci" WorkingDirectory="$(ClientRoot)" />
+    <Exec Command="npm run build" WorkingDirectory="$(ClientRoot)" />
+    <ItemGroup>
+      <ClientDistFiles Include="$(ClientRoot)dist\client\browser\**" />
+      <ResolvedFileToPublish Include="@(ClientDistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="..\ConferenceRoomBooking.Application\ConferenceRoomBooking.Application.csproj" />
     <ProjectReference Include="..\ConferenceRoomBooking.Infrastructure\ConferenceRoomBooking.Infrastructure.csproj" />

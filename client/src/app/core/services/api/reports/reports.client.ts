@@ -1,6 +1,10 @@
 import { httpResource, HttpResourceRef } from '@angular/common/http';
 import { Injectable, Signal } from '@angular/core';
-import { IRevenueReport, TRevenueGrouping } from '../../../entities/reports/report.dto';
+import {
+  IOccupancyReport,
+  IRevenueReport,
+  TRevenueGrouping,
+} from '../../../entities/reports/report.dto';
 
 export type TReportQuery = { from: string; to: string };
 
@@ -15,6 +19,13 @@ export class ReportsClient {
   ): HttpResourceRef<IRevenueReport | undefined> {
     return httpResource<IRevenueReport>(() => ({
       url: '/api/reports/revenue',
+      params: { ...$query() },
+    }));
+  }
+
+  occupancyResource($query: Signal<TReportQuery>): HttpResourceRef<IOccupancyReport | undefined> {
+    return httpResource<IOccupancyReport>(() => ({
+      url: '/api/reports/occupancy',
       params: { ...$query() },
     }));
   }

@@ -37,3 +37,21 @@ export interface IRevenueReport {
   }[];
   periods: { from: string; to: string; revenue: IRevenueFigures }[];
 }
+
+export interface IOccupancyFigures {
+  bookingCount: number;
+  bookedHours: number;
+  /** 17 hours per room per day. */
+  openHours: number;
+  occupancyRate: number;
+  averageAttendees: number;
+  /** Attendees as a fraction of the room's current capacity, averaged over bookings. */
+  fillRate: number;
+  cancellations: ICancellationFigures;
+}
+
+export interface IOccupancyReport {
+  period: IReportPeriod;
+  overall: IOccupancyFigures;
+  rooms: { roomId: string; roomName: string; capacity: number; occupancy: IOccupancyFigures }[];
+}

@@ -10,6 +10,7 @@ import { ErrorStateComponent } from '../../../../shared/ui/components/error-stat
 import { SkeletonComponent } from '../../../../shared/ui/components/skeleton/skeleton.component';
 import { formatUah, UahPipe } from '../../../../shared/ui/pipes/uah.pipe';
 import { formatWallDate } from '../../../../shared/ui/pipes/wall-date.pipe';
+import { formatRate } from '../../utils/format-report.util';
 import { TReportPeriod } from '../../utils/report-period.util';
 
 const SERIES = [
@@ -29,6 +30,7 @@ const SERIES = [
 export class RevenueReportComponent {
   protected readonly series = SERIES;
   protected readonly formatUah = formatUah;
+  protected readonly percent = formatRate;
 
   readonly $period = input.required<TReportPeriod>({ alias: 'period' });
 
@@ -63,8 +65,4 @@ export class RevenueReportComponent {
           },
     );
   });
-
-  protected percent(rate: number): string {
-    return `${Math.round(rate * 1000) / 10}%`;
-  }
 }

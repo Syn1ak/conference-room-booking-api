@@ -6,6 +6,7 @@ import { venueToday } from '../../../../core/utils/venue-time.util';
 import { CardComponent } from '../../../../shared/ui/components/card/card.component';
 import { PageHeaderComponent } from '../../../../shared/ui/components/page-header/page-header.component';
 import { WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
+import { OccupancyReportComponent } from '../../features/occupancy/occupancy-report.component';
 import { RevenueReportComponent } from '../../features/revenue/revenue-report.component';
 import { parsePeriod, periodDays, TReportPeriod } from '../../utils/report-period.util';
 import { PeriodPickerComponent } from './view/components/period-picker.component';
@@ -24,6 +25,7 @@ import { PeriodPickerComponent } from './view/components/period-picker.component
     CardComponent,
     PageHeaderComponent,
     PeriodPickerComponent,
+    OccupancyReportComponent,
     RevenueReportComponent,
     WallDatePipe,
   ],
@@ -37,7 +39,10 @@ export default class ReportsComponent {
   /** The open report, from the query string. */
   readonly $report = input<string | undefined>(undefined, { alias: 'report' });
 
-  protected readonly reports = [{ id: 'revenue', label: 'Revenue' }];
+  protected readonly reports = [
+    { id: 'revenue', label: 'Revenue' },
+    { id: 'occupancy', label: 'Occupancy' },
+  ];
   protected readonly $selectedReport = computed(() =>
     this.reports.some((report) => report.id === this.$report())
       ? this.$report()!

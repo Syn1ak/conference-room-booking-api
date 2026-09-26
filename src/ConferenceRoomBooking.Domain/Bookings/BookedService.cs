@@ -5,7 +5,7 @@ namespace ConferenceRoomBooking.Domain.Bookings;
 /// </summary>
 public sealed record BookedService
 {
-    internal BookedService(Guid serviceId, string name, decimal price)
+    public BookedService(Guid serviceId, string name, decimal price)
     {
         ServiceId = serviceId;
         Name = name;

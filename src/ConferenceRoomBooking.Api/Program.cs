@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ConferenceRoomBooking.Api.Auth;
 using ConferenceRoomBooking.Api.Common;
 using ConferenceRoomBooking.Api.OpenApi;
@@ -19,11 +20,19 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddApiRateLimiting(builder.Configuration);
 builder.Services.AddVenueTimeZone(builder.Configuration);
 
-builder.Services.AddControllers(options =>
-{
-    // Times in the query string must carry a UTC offset (ADR 0003).
-    options.ModelBinderProviders.Insert(0, new OffsetRequiredDateTimeOffsetBinderProvider());
-});
+// Times in the query string and in request bodies must carry a UTC offset (ADR 0003).
+builder.Services
+    .AddControllers(options => options.ModelBinderProviders.Insert(0, new OffsetRequiredDateTimeOffsetBinderProvider()))
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new OffsetRequiredDateTimeOffsetJsonConverter());
+        // Enums such as a booking's status are sent as their names, like "Confirmed", rather than numbers.
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+// The OpenAPI document is generated from these options rather than the controllers' ones, so enums are described
+// the way they're sent.
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddApiDocumentation();
 
 // Every error response, including unhandled exceptions and bare status codes, is RFC 7807 ProblemDetails with a trace id.

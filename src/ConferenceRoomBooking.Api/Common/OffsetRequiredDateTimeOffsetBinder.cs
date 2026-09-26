@@ -14,7 +14,7 @@ public sealed class OffsetRequiredDateTimeOffsetBinder : IModelBinder
 
     public const string InvalidMessage =
         "The value isn't a valid ISO 8601 time with a UTC offset, for example 2024-09-01T10:00:00+03:00. " +
-        "In a query string, encode '+' as %2B.";
+        "In a query string, send '+' as %2B.";
 
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {

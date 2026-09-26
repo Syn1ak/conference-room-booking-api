@@ -8,4 +8,10 @@ export const ROUTES: Route[] = [
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login.component'),
   },
+  {
+    path: 'register',
+    title: 'Create account',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/register/register.component'),
+  },
 ];

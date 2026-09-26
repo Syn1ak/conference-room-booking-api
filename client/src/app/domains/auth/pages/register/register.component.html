@@ -1,0 +1,52 @@
+<app-auth-card
+  title="Create your account"
+  subtitle="Book conference rooms in a minute and keep track of your bookings."
+>
+  <form class="flex flex-col gap-5" [formRoot]="registerForm">
+    @if ($formErrors().length > 0) {
+      <app-alert tone="danger">
+        @for (message of $formErrors(); track message) {
+          <p>{{ message }}</p>
+        }
+      </app-alert>
+    }
+
+    <app-form-field label="Email" [field]="registerForm.email">
+      <input appInput type="email" autocomplete="email" [formField]="registerForm.email" />
+    </app-form-field>
+
+    <app-form-field label="Password" [field]="registerForm.password">
+      <app-password-input autocomplete="new-password" [field]="registerForm.password" />
+    </app-form-field>
+    <app-password-rules class="-mt-2" [password]="model().password" />
+
+    <app-form-field label="Repeat password" [field]="registerForm.confirmPassword">
+      <app-password-input autocomplete="new-password" [field]="registerForm.confirmPassword" />
+    </app-form-field>
+
+    <button
+      app-button
+      type="submit"
+      size="lg"
+      class="w-full"
+      [loading]="registerForm().submitting()"
+      [disabled]="cooldown.$secondsLeft() > 0"
+    >
+      @if (cooldown.$secondsLeft() > 0) {
+        Try again in {{ cooldown.$secondsLeft() }} s
+      } @else {
+        Create account
+      }
+    </button>
+  </form>
+
+  <ng-container appAuthFooter>
+    Already have an account?
+    <a
+      routerLink="/login"
+      [queryParams]="{ returnUrl: $safeReturnUrl() }"
+      class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400"
+      >Sign in</a
+    >
+  </ng-container>
+</app-auth-card>

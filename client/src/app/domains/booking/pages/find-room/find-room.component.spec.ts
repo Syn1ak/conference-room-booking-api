@@ -5,7 +5,9 @@ import { provideRouter, Router } from '@angular/router';
 import { render, screen, within } from '@testing-library/angular';
 import { IAvailableRoom } from '../../../../core/entities/rooms/room.dto';
 import userEvent from '@testing-library/user-event';
+import { SessionStore } from '../../../../core/services/session/session.store';
 import { VenueStore } from '../../../../core/services/venue/venue.store';
+import { testSession } from '../../../../core/testing/session.testing';
 import { TEST_VENUE } from '../../../../core/testing/venue.testing';
 import FindRoomComponent from './find-room.component';
 
@@ -225,6 +227,50 @@ describe('FindRoomComponent', () => {
 
       http.expectNone((r) => r.url === '/api/rooms/available');
       expect(screen.getByRole('heading', { name: 'Search to see free rooms' })).toBeInTheDocument();
+    });
+
+    describe('booking', () => {
+      const showResults = async (role?: 'Admin' | 'Client') => {
+        sessionStorage.clear();
+        if (role) {
+          sessionStorage.setItem(
+            'crb.session',
+            JSON.stringify({ ...testSession({ role }), expiresAt: '2099-01-01T00:00:00Z' }),
+          );
+        }
+        const result = await setup(SEARCH);
+        result.http.expectOne((r) => r.url === '/api/rooms/available').flush([ROOM_A]);
+        await result.fixture.whenStable();
+
+        return result;
+      };
+
+      afterEach(() => sessionStorage.clear());
+
+      it('lets a client book a room', async () => {
+        await showResults('Client');
+
+        expect(within(results()).getByRole('button', { name: 'Book' })).toBeInTheDocument();
+      });
+
+      it('asks a visitor to sign in, coming back to this search', async () => {
+        await showResults();
+
+        expect(within(results()).getByRole('link', { name: 'Sign in to book' })).toHaveAttribute(
+          'href',
+          expect.stringMatching(/^\/login\?returnUrl=/),
+        );
+      });
+
+      it("tells staff that bookings are made by clients, and doesn't offer to book", async () => {
+        await showResults('Admin');
+
+        expect(within(results()).getByRole('status')).toHaveTextContent(
+          'Bookings are made from client accounts.',
+        );
+        expect(within(results()).queryByRole('button', { name: 'Book' })).toBeNull();
+        expect(TestBed.inject(SessionStore).$role()).toBe('Admin');
+      });
     });
   });
 });

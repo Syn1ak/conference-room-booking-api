@@ -10,9 +10,12 @@ import {
   required,
   validate,
 } from '@angular/forms/signals';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CalendarSearch, Search, SearchX } from 'lucide';
 import { filter } from 'rxjs';
+import { IAvailableRoom } from '../../../../core/entities/rooms/room.dto';
+import { SessionStore } from '../../../../core/services/session/session.store';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { minutesOfDay, TSlotInput } from '../../../../core/utils/venue-time.util';
 import { BandTimelineComponent } from '../../../../shared/ui/components/band-timeline/band-timeline.component';
 import { ButtonComponent } from '../../../../shared/ui/components/button/button.component';
@@ -24,8 +27,10 @@ import { FormFieldComponent } from '../../../../shared/ui/components/form-field/
 import { IconComponent } from '../../../../shared/ui/components/icon/icon.component';
 import { SkeletonComponent } from '../../../../shared/ui/components/skeleton/skeleton.component';
 import { InputDirective } from '../../../../shared/ui/directives/input.directive';
-import { WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
+import { formatWallDate, WallDatePipe } from '../../../../shared/ui/pipes/wall-date.pipe';
 import { AvailableRoomCardComponent } from './view/components/available-room-card.component';
+import { formatUah } from '../../../../shared/ui/pipes/uah.pipe';
+import { BookRoomDialogService } from '../../features/book-room/data-access/book-room-dialog.service';
 import { FindRoomFacade } from './data-access/find-room.facade';
 import { TSearchQuery } from './models/search-query.types';
 import { isCompleteSearch, parseSearchQuery } from './utils/search-query.util';
@@ -39,6 +44,7 @@ import { isCompleteSearch, parseSearchQuery } from './utils/search-query.util';
   imports: [
     FormField,
     FormRoot,
+    RouterLink,
     AlertComponent,
     AvailableRoomCardComponent,
     BandTimelineComponent,
@@ -60,6 +66,9 @@ export default class FindRoomComponent {
   protected readonly icons = { CalendarSearch, Search, SearchX };
   protected readonly facade = inject(FindRoomFacade);
   private readonly router = inject(Router);
+  private readonly bookRoomDialog = inject(BookRoomDialogService);
+  private readonly toasts = inject(ToastService);
+  protected readonly session = inject(SessionStore);
 
   readonly $date = input<string | undefined>(undefined, { alias: 'date' });
   readonly $from = input<string | undefined>(undefined, { alias: 'from' });
@@ -135,5 +144,27 @@ export default class FindRoomComponent {
         takeUntilDestroyed(inject(DestroyRef)),
       )
       .subscribe(() => this.searchForm().markAsTouched());
+  }
+
+  /** The page to come back to after signing in: this search. */
+  protected get currentUrl(): string {
+    return this.router.url;
+  }
+
+  protected async book(room: IAvailableRoom): Promise<void> {
+    const query = this.search.$query();
+    if (!query) {
+      return;
+    }
+
+    const result = await this.bookRoomDialog.open({ room, ...query });
+    if (result) {
+      const { booking } = result;
+      this.toasts.success(
+        `${room.name} is booked`,
+        `${formatWallDate(booking.start)} · ${query.from}–${query.to} · ${formatUah(booking.totalPrice)}`,
+      );
+      this.search.reload();
+    }
   }
 }

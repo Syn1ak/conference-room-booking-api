@@ -20,6 +20,20 @@ const FORMATS: Record<TWallDateFormat, Intl.DateTimeFormat> = {
   short: new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }),
 };
 
+/** The date of an ISO string as written, for example `Thu, 1 Oct 2026`. */
+export function formatWallDate(
+  value: string | null | undefined,
+  format: TWallDateFormat = 'full',
+): string {
+  if (!value) {
+    return '';
+  }
+
+  const wallClock = parseWallClock(value);
+
+  return wallClock ? FORMATS[format].format(wallClockAsUtcDate(wallClock)) : value;
+}
+
 /**
  * Formats the date of an ISO string as written, for example `Thu, 1 Oct 2026`, without converting it to the browser's
  * time zone.
@@ -27,12 +41,6 @@ const FORMATS: Record<TWallDateFormat, Intl.DateTimeFormat> = {
 @Pipe({ name: 'wallDate' })
 export class WallDatePipe implements PipeTransform {
   transform(value: string | null | undefined, format: TWallDateFormat = 'full'): string {
-    if (!value) {
-      return '';
-    }
-
-    const wallClock = parseWallClock(value);
-
-    return wallClock ? FORMATS[format].format(wallClockAsUtcDate(wallClock)) : value;
+    return formatWallDate(value, format);
   }
 }

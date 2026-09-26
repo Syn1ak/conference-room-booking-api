@@ -122,9 +122,27 @@
         </app-empty-state>
       </app-card>
     } @else {
+      @if (session.$role() === 'Admin') {
+        <app-alert class="mb-4">
+          You're signed in with a staff account. Bookings are made from client accounts.
+        </app-alert>
+      }
       <ul class="grid gap-4">
         @for (room of search.$rooms(); track room.id) {
-          <li><app-available-room-card [room]="room" [bands]="search.$bands()" /></li>
+          <li>
+            <app-available-room-card [room]="room" [bands]="search.$bands()">
+              @switch (session.$role()) {
+                @case ('Client') {
+                  <button app-button type="button" (click)="book(room)">Book</button>
+                }
+                @case (null) {
+                  <a app-button routerLink="/login" [queryParams]="{ returnUrl: currentUrl }"
+                    >Sign in to book</a
+                  >
+                }
+              }
+            </app-available-room-card>
+          </li>
         }
       </ul>
     }

@@ -1,10 +1,12 @@
 using ConferenceRoomBooking.Application.Auth;
+using ConferenceRoomBooking.Application.Bookings;
 using ConferenceRoomBooking.Application.Common;
 using ConferenceRoomBooking.Application.Rooms;
 using ConferenceRoomBooking.Application.Services;
 using ConferenceRoomBooking.Infrastructure.Authentication;
 using ConferenceRoomBooking.Infrastructure.Identity;
 using ConferenceRoomBooking.Infrastructure.Persistence;
+using ConferenceRoomBooking.Infrastructure.Persistence.Bookings;
 using ConferenceRoomBooking.Infrastructure.Persistence.Rooms;
 using ConferenceRoomBooking.Infrastructure.Persistence.Services;
 using Microsoft.AspNetCore.Identity;
@@ -43,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
     }
 
     private static void AddIdentityServices(this IServiceCollection services, IConfiguration configuration)

@@ -1,5 +1,7 @@
 using ConferenceRoomBooking.Application.Rooms;
+using ConferenceRoomBooking.Domain.Bookings;
 using ConferenceRoomBooking.Domain.Rooms;
+using ConferenceRoomBooking.Infrastructure.Persistence.Bookings;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoomBooking.Infrastructure.Persistence.Rooms;
@@ -14,6 +16,18 @@ public sealed class RoomRepository(ApplicationDbContext dbContext) : IRoomReposi
 
     public async Task<IReadOnlyList<Room>> ListAsync(CancellationToken cancellationToken) =>
         await RoomsWithOfferings().OrderBy(room => room.Name).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Room>> FindAvailableAsync(
+        BookingSlot slot, int capacity, CancellationToken cancellationToken)
+    {
+        var overlappingBookings = dbContext.Bookings.ConfirmedOverlapping(slot);
+
+        return await RoomsWithOfferings()
+            .Where(room => room.Capacity >= capacity)
+            .Where(room => !overlappingBookings.Any(booking => booking.RoomId == room.Id))
+            .OrderBy(room => room.Name)
+            .ToListAsync(cancellationToken);
+    }
 
     // The database collation ignores case, as the unique index on the name does.
     public Task<bool> NameExistsAsync(string name, Guid? exceptId, CancellationToken cancellationToken) =>

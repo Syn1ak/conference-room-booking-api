@@ -1,3 +1,4 @@
+using ConferenceRoomBooking.Domain.Bookings;
 using ConferenceRoomBooking.Domain.Rooms;
 
 namespace ConferenceRoomBooking.Application.Rooms;
@@ -12,6 +13,12 @@ public interface IRoomRepository
 
     /// <summary>All rooms, ordered by name.</summary>
     Task<IReadOnlyList<Room>> ListAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Rooms that hold at least <paramref name="capacity"/> people and have no confirmed booking overlapping
+    /// <paramref name="slot"/>, ordered by name.
+    /// </summary>
+    Task<IReadOnlyList<Room>> FindAvailableAsync(BookingSlot slot, int capacity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Whether a room other than <paramref name="exceptId"/> has this name. Names are compared ignoring case.

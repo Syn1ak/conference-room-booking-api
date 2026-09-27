@@ -1,0 +1,78 @@
+# Checks every push and pull request: the .NET build and tests, the client's lint, tests, and build, and the
+# end-to-end tests against the published app (ADR 0009).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: .NET build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      # Warnings are errors (Directory.Build.props). The integration tests start SQL Server with Testcontainers.
+      - run: dotnet build --configuration Release
+      - run: dotnet test --configuration Release --no-build
+
+  client:
+    name: Client lint, tests, and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Start SQL Server
+        run: |
+          # A password for this run only, meeting SQL Server's complexity rules.
+          echo "MSSQL_SA_PASSWORD=Ci-$(openssl rand -hex 12)-Aa1" > .env
+          docker compose up --detach --wait
+      - run: npm ci
+        working-directory: client
+      - run: npx playwright install --with-deps chromium
+        working-directory: client
+      - run: npm run e2e
+        working-directory: client
+      - name: Keep the report of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: client/playwright-report
+          retention-days: 7

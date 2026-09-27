@@ -25,7 +25,11 @@ SECRETS_FILE="${SECRETS_FILE:-$HOME/.conference-rooms-azure.txt}"
 
 password() { echo "$(openssl rand -base64 24 | tr -d '/+=')-Aa1!"; }
 SQL_ADMIN_PASSWORD="$(password)"
+# Shown to everyone on the sign-in page, so generated only to keep it out of the repository.
+DEMO_PASSWORD="$(password)"
 ADMIN_PASSWORD="$(password)"
+# Shown to everyone on the sign-in page, so generated only to keep it out of the repository.
+DEMO_PASSWORD="$(password)"
 JWT_SIGNING_KEY="$(openssl rand -base64 48)"
 
 echo "Creating resource group $RESOURCE_GROUP in $LOCATION"
@@ -54,7 +58,15 @@ az webapp config appsettings set --resource-group "$RESOURCE_GROUP" --name "$WEB
   "ConnectionStrings__DefaultConnection=$CONNECTION_STRING" \
   "Jwt__SigningKey=$JWT_SIGNING_KEY" \
   "AdminAccount__Email=$ADMIN_EMAIL" \
-  "AdminAccount__Password=$ADMIN_PASSWORD"
+  "AdminAccount__Password=$ADMIN_PASSWORD" \
+  "DemoAccounts__Accounts__0__Label=Demo client" \
+  "DemoAccounts__Accounts__0__Email=demo.client@conference-rooms.app" \
+  "DemoAccounts__Accounts__0__Password=$DEMO_PASSWORD" \
+  "DemoAccounts__Accounts__0__Role=Client" \
+  "DemoAccounts__Accounts__1__Label=Demo staff" \
+  "DemoAccounts__Accounts__1__Email=demo.staff@conference-rooms.app" \
+  "DemoAccounts__Accounts__1__Password=$DEMO_PASSWORD" \
+  "DemoAccounts__Accounts__1__Role=Admin"
 
 echo "Connecting GitHub Actions through OpenID Connect"
 SUBSCRIPTION_ID="$(az account show --query id --output tsv)"

@@ -8,6 +8,9 @@ Angular 22 client served from the same origin.
 
 **Live demo:** https://LIVE-URL.azurewebsites.net · **API docs:** https://LIVE-URL.azurewebsites.net/swagger
 
+**Demo accounts:** the sign-in page offers a demo client and a demo staff member; one click signs in, no
+registration needed. They're shared, so others may see your test bookings.
+
 > **The demo runs on Azure's free tiers, so give it a moment.**
 > - **The first visit after a quiet spell is slow.** The free App Service plan (F1) puts the app to sleep after about
 >   20 idle minutes; waking it takes around 20–30 seconds.

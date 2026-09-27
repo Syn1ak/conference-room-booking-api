@@ -5,9 +5,12 @@ import {
   FormField,
   FormRoot,
   required,
+  submit,
   TreeValidationResult,
 } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { IDemoAccount } from '../../../../core/entities/auth/auth.dto';
+import { AuthClient } from '../../../../core/services/api/auth/auth.client';
 import { toApiError, toFormErrors } from '../../../../core/utils/api-error.util';
 import { homeUrl } from '../../../../core/utils/home-url.util';
 import { AlertComponent } from '../../../../shared/ui/components/alert/alert.component';
@@ -46,6 +49,7 @@ export default class LoginComponent {
   /** Where to go after signing in, from the query string. */
   readonly $returnUrl = input<string | null>(null, { alias: 'returnUrl' });
 
+  protected readonly demoAccounts = inject(AuthClient).demoAccountsResource();
   protected readonly cooldown = createCooldown();
   protected readonly $safeReturnUrl = computed(() => safeReturnUrl(this.$returnUrl()));
 
@@ -72,6 +76,12 @@ export default class LoginComponent {
 
     return submitError ? [submitError, ...errors] : errors;
   });
+
+  /** Signs in with a demo account in one click. */
+  protected signInAs(account: IDemoAccount): void {
+    this.model.set({ email: account.email, password: account.password });
+    void submit(this.loginForm);
+  }
 
   private async submit(credentials: {
     email: string;

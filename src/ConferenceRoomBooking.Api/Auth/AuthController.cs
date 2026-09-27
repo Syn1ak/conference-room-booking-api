@@ -4,12 +4,15 @@ using ConferenceRoomBooking.Application.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+using ConferenceRoomBooking.Infrastructure.Identity;
 
 namespace ConferenceRoomBooking.Api.Auth;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController(AuthService authService, ICurrentUser currentUser) : ControllerBase
+public sealed class AuthController(
+    AuthService authService, ICurrentUser currentUser, IOptions<DemoAccountsOptions> demoAccounts) : ControllerBase
 {
     /// <summary>
     /// Creates a Client account. Admin accounts can't be created through the API.
@@ -52,6 +55,18 @@ public sealed class AuthController(AuthService authService, ICurrentUser current
 
         return Ok(new LoginResponse(accessToken.Value, "Bearer", accessToken.ExpiresAt));
     }
+
+    /// <summary>
+    /// Lists the demo accounts anyone may sign in with to try the app, with their public passwords. Empty unless the
+    /// deployment configures some.
+    /// </summary>
+    [HttpGet("demo-accounts")]
+    [AllowAnonymous]
+    [ProducesResponseType<IReadOnlyList<DemoAccountResponse>>(StatusCodes.Status200OK)]
+    public ActionResult<IReadOnlyList<DemoAccountResponse>> DemoAccounts() =>
+        Ok(demoAccounts.Value.Accounts
+            .Select(account => new DemoAccountResponse(account.Label, account.Email, account.Password, account.Role))
+            .ToList());
 
     /// <summary>
     /// Returns the account the access token belongs to.

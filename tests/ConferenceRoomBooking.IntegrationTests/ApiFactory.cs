@@ -21,6 +21,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string AdminEmail = "admin@integration.test";
     public const string AdminPassword = "Admin123!";
+    public const string DemoClientEmail = "demo.client@integration.test";
+    public const string DemoStaffEmail = "demo.staff@integration.test";
+    public const string DemoPassword = "Demo123!";
 
     // Same image as docker-compose.yml.
     private readonly MsSqlContainer _database =
@@ -51,6 +54,14 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-with-at-least-32-characters");
         builder.UseSetting("AdminAccount:Email", AdminEmail);
         builder.UseSetting("AdminAccount:Password", AdminPassword);
+        builder.UseSetting("DemoAccounts:Accounts:0:Label", "Client");
+        builder.UseSetting("DemoAccounts:Accounts:0:Email", DemoClientEmail);
+        builder.UseSetting("DemoAccounts:Accounts:0:Password", DemoPassword);
+        builder.UseSetting("DemoAccounts:Accounts:0:Role", "Client");
+        builder.UseSetting("DemoAccounts:Accounts:1:Label", "Staff");
+        builder.UseSetting("DemoAccounts:Accounts:1:Email", DemoStaffEmail);
+        builder.UseSetting("DemoAccounts:Accounts:1:Password", DemoPassword);
+        builder.UseSetting("DemoAccounts:Accounts:1:Role", "Admin");
 
         // Every test request comes from the same in-memory client; don't let rate limits interfere.
         builder.UseSetting("RateLimiting:GlobalPermitLimit", "10000");

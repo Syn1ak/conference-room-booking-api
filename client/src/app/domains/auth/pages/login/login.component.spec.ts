@@ -11,14 +11,17 @@ describe('LoginComponent', () => {
   beforeEach(() => sessionStorage.clear());
   afterEach(() => vi.useRealTimers());
 
-  const setup = async (returnUrl: string | null = null) => {
+  const setup = async (returnUrl: string | null = null, demoAccounts: unknown[] = []) => {
     const result = await render(LoginComponent, {
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
       componentInputs: { returnUrl },
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/auth/demo-accounts').flush(demoAccounts);
+    await result.fixture.whenStable();
 
-    return { ...result, navigate, http: TestBed.inject(HttpTestingController) };
+    return { ...result, navigate, http };
   };
 
   const fillIn = async (email = 'ann@example.test', password = 'Secret-Pass1!') => {
@@ -159,5 +162,34 @@ describe('LoginComponent', () => {
       'href',
       '/register?returnUrl=%2Fbookings',
     );
+  });
+
+  describe('demo accounts', () => {
+    const DEMO = [
+      {
+        label: 'Client',
+        email: 'demo.client@example.test',
+        password: 'Demo-Pass1!',
+        role: 'Client',
+      },
+      { label: 'Staff', email: 'demo.staff@example.test', password: 'Demo-Pass1!', role: 'Admin' },
+    ];
+
+    it('signs in with a demo account in one click', async () => {
+      const { http } = await setup(null, DEMO);
+
+      await userEvent.click(screen.getByRole('button', { name: /Staff/ }));
+
+      expect(http.expectOne('/api/auth/login').request.body).toEqual({
+        email: 'demo.staff@example.test',
+        password: 'Demo-Pass1!',
+      });
+    });
+
+    it('shows no demo section when the deployment has none', async () => {
+      await setup();
+
+      expect(screen.queryByRole('heading', { name: 'Try a demo account' })).toBeNull();
+    });
   });
 });

@@ -98,3 +98,24 @@ test.describe('signing in', () => {
     await expect(page).toHaveURL('/');
   });
 });
+
+test.describe('demo accounts', () => {
+  test('a visitor signs in as the demo client in one click', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.getByRole('button', { name: /Client/ }).click();
+
+    await expect(page).toHaveURL('/');
+    await expect(page.getByRole('button', { name: 'Account: demo.client@e2e.test' })).toBeVisible();
+  });
+
+  test('a visitor signs in as the demo staff account and reaches the reports', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.getByRole('button', { name: /Staff/ }).click();
+
+    await expect(page).toHaveURL('/bookings');
+    await page.getByRole('link', { name: 'Reports' }).click();
+    await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible();
+  });
+});

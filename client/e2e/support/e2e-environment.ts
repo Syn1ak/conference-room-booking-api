@@ -11,6 +11,13 @@ export const E2E_DATABASE = 'ConferenceRoomBookingE2E';
 /** Test-only admin account. It exists only in the throwaway end-to-end database. */
 export const E2E_ADMIN = { email: 'admin@e2e.test', password: 'E2e-Admin-Pass1!' };
 
+/** Public demo accounts, as a demo deployment configures them. */
+export const E2E_DEMO = {
+  client: 'demo.client@e2e.test',
+  staff: 'demo.staff@e2e.test',
+  password: 'Demo-Pass1!',
+};
+
 const envFile = resolve(__dirname, '../../../.env');
 if (existsSync(envFile)) {
   process.loadEnvFile(envFile);
@@ -40,5 +47,13 @@ export const apiEnvironment: Record<string, string> = {
   // Parallel tests register many accounts from one address; the limits themselves are covered by the API's tests.
   RateLimiting__GlobalPermitLimit: '100000',
   RateLimiting__AuthenticationPermitLimit: '100000',
+  DemoAccounts__Accounts__0__Label: 'Client',
+  DemoAccounts__Accounts__0__Email: E2E_DEMO.client,
+  DemoAccounts__Accounts__0__Password: E2E_DEMO.password,
+  DemoAccounts__Accounts__0__Role: 'Client',
+  DemoAccounts__Accounts__1__Label: 'Staff',
+  DemoAccounts__Accounts__1__Email: E2E_DEMO.staff,
+  DemoAccounts__Accounts__1__Password: E2E_DEMO.password,
+  DemoAccounts__Accounts__1__Role: 'Admin',
   MSSQL_SA_PASSWORD: saPassword,
 };

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using ConferenceRoomBooking.Application.Auth;
 using ConferenceRoomBooking.Application.Bookings;
 using ConferenceRoomBooking.Application.Common;
@@ -64,6 +65,15 @@ public static class DependencyInjection
             .AddOptions<AdminAccountOptions>()
             .Bind(configuration.GetSection(AdminAccountOptions.SectionName))
             .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services
+            .AddOptions<DemoAccountsOptions>()
+            .Bind(configuration.GetSection(DemoAccountsOptions.SectionName))
+            .Validate(
+                options => options.Accounts.All(account =>
+                    Validator.TryValidateObject(account, new ValidationContext(account), null, validateAllProperties: true)),
+                "Every demo account needs a label, a valid email, a password, and the role Admin or Client.")
             .ValidateOnStart();
 
         services.AddScoped<IdentitySeeder>();

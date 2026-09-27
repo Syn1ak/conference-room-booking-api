@@ -1,9 +1,16 @@
-import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpContext,
+  HttpHeaders,
+  httpResource,
+  HttpResourceRef,
+} from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   ICredentials,
   ICurrentUser,
+  IDemoAccount,
   ILoginResponse,
   IRegisterResponse,
 } from '../../../entities/auth/auth.dto';
@@ -26,5 +33,10 @@ export class AuthClient {
     return this.http.get<ICurrentUser>('/api/auth/me', {
       headers: new HttpHeaders({ Authorization: `Bearer ${accessToken}` }),
     });
+  }
+
+  /** The demo accounts, if the deployment has any. Must be created in an injection context. */
+  demoAccountsResource(): HttpResourceRef<IDemoAccount[] | undefined> {
+    return httpResource<IDemoAccount[]>(() => '/api/auth/demo-accounts');
   }
 }

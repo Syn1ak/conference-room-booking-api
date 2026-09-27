@@ -32,6 +32,38 @@
     </button>
   </form>
 
+  @if (demoAccounts.hasValue() && demoAccounts.value().length > 0) {
+    <section class="mt-6 border-t border-line pt-6" aria-labelledby="demo-accounts-heading">
+      <h2 id="demo-accounts-heading" class="text-sm font-semibold text-ink">Try a demo account</h2>
+      <p class="mt-1 text-xs text-ink-subtle">
+        Shared accounts for trying the app; anyone can use them.
+      </p>
+      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+        @for (account of demoAccounts.value(); track account.email) {
+          <button
+            app-button
+            variant="secondary"
+            type="button"
+            class="h-auto! justify-start py-2.5 text-left"
+            [disabled]="loginForm().submitting() || cooldown.$secondsLeft() > 0"
+            (click)="signInAs(account)"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-semibold text-ink">{{ account.label }}</span>
+              <span class="text-xs font-normal text-ink-subtle">
+                {{
+                  account.role === 'Admin'
+                    ? 'Staff: rooms, services, reports'
+                    : 'Books and cancels rooms'
+                }}
+              </span>
+            </span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
   <ng-container appAuthFooter>
     New here?
     <a

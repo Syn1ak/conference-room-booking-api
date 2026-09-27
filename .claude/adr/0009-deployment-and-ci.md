@@ -29,7 +29,7 @@ GitHub Actions runs three jobs in parallel on `ubuntu-latest`:
 
 ### 2. Azure resources: the cheapest tiers that work
 
-All in one resource group in **Poland Central**, the region closest to the venue in Kyiv.
+All in one resource group. The web app is in **Poland Central**, the region closest to the venue in Kyiv. The database is in **Sweden Central**: Poland Central failed to create the free-offer database and other nearby regions weren't accepting new SQL servers. A few milliseconds between the app and the database don't matter at this scale.
 
 | Resource | Tier | Notes |
 |---|---|---|

@@ -6,7 +6,7 @@ and see exactly what they'll pay; staff manage rooms and services and follow the
 Built as a backend test task ([the brief](.claude/BackendTZ.md)) with ASP.NET Core 10, EF Core and SQL Server, and an
 Angular 22 client served from the same origin.
 
-**Live demo:** https://LIVE-URL.azurewebsites.net · **API docs:** https://LIVE-URL.azurewebsites.net/swagger
+**Live demo:** https://conference-rooms-71b9ce.azurewebsites.net · **API docs:** https://conference-rooms-71b9ce.azurewebsites.net/swagger
 
 **Demo accounts:** the sign-in page offers a demo client and a demo staff member; one click signs in, no
 registration needed. They're shared, so others may see your test bookings.
@@ -100,6 +100,6 @@ cd client && npm ci && npm start   # http://localhost:4200, proxying /api to the
 `master`, the deploy workflow signs in to Azure with OpenID Connect (no stored credentials), applies the EF Core
 migrations as a bundle, publishes the API with the built client, and waits for `/health`.
 
-The Azure resources (App Service on F1, Azure SQL free offer, in Poland Central) are created by
+The Azure resources (App Service on F1, in Poland Central; Azure SQL free offer, in Sweden Central) are created by
 [`infra/provision.sh`](infra/provision.sh), which also connects GitHub to Azure. Secrets are generated there and live
 only in App Service settings and GitHub secrets.

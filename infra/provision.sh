@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates the Azure resources for the app and connects GitHub Actions to them (ADR 0009):
 #   - a resource group in Poland Central,
-#   - an Azure SQL server with a database on the free offer (serverless, pauses when idle),
+#   - an Azure SQL server in Sweden Central with a database on the free offer (serverless, pauses when idle),
 #   - a Linux App Service plan on the F1 Free tier and a .NET 10 web app,
 #   - an Entra app registration that GitHub Actions signs in as through OpenID Connect, allowed to manage this
 #     resource group only, and the GitHub secrets and variables the deploy workflow reads.
@@ -13,6 +13,8 @@ set -euo pipefail
 
 REPO="${REPO:-Syn1ak/conference-room-booking-api}"
 LOCATION="${LOCATION:-polandcentral}"
+# Poland Central wasn't accepting new Azure SQL servers, so the database lives in the nearest region that was.
+SQL_LOCATION="${SQL_LOCATION:-swedencentral}"
 RESOURCE_GROUP="${RESOURCE_GROUP:-rg-conference-rooms}"
 SUFFIX="${SUFFIX:-$(openssl rand -hex 3)}"
 SQL_SERVER="sql-conference-rooms-$SUFFIX"
@@ -25,8 +27,6 @@ SECRETS_FILE="${SECRETS_FILE:-$HOME/.conference-rooms-azure.txt}"
 
 password() { echo "$(openssl rand -base64 24 | tr -d '/+=')-Aa1!"; }
 SQL_ADMIN_PASSWORD="$(password)"
-# Shown to everyone on the sign-in page, so generated only to keep it out of the repository.
-DEMO_PASSWORD="$(password)"
 ADMIN_PASSWORD="$(password)"
 # Shown to everyone on the sign-in page, so generated only to keep it out of the repository.
 DEMO_PASSWORD="$(password)"
@@ -36,7 +36,7 @@ echo "Creating resource group $RESOURCE_GROUP in $LOCATION"
 az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --output none
 
 echo "Creating SQL server $SQL_SERVER and database $SQL_DATABASE (free offer)"
-az sql server create --resource-group "$RESOURCE_GROUP" --name "$SQL_SERVER" --location "$LOCATION" \
+az sql server create --resource-group "$RESOURCE_GROUP" --name "$SQL_SERVER" --location "$SQL_LOCATION" \
   --admin-user "$SQL_ADMIN_USER" --admin-password "$SQL_ADMIN_PASSWORD" --minimal-tls-version 1.2 --output none
 az sql db create --resource-group "$RESOURCE_GROUP" --server "$SQL_SERVER" --name "$SQL_DATABASE" \
   --edition GeneralPurpose --compute-model Serverless --family Gen5 --capacity 2 \

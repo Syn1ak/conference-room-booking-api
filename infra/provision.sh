@@ -71,12 +71,16 @@ az webapp config appsettings set --resource-group "$RESOURCE_GROUP" --name "$WEB
 echo "Connecting GitHub Actions through OpenID Connect"
 SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
 TENANT_ID="$(az account show --query tenantId --output tsv)"
+# The deploy job runs in the production environment, and GitHub names the repository by owner and repository ids.
+OWNER_ID="$(gh api "repos/$REPO" --jq .owner.id)"
+REPO_ID="$(gh api "repos/$REPO" --jq .id)"
+OIDC_SUBJECT="repo:${REPO%%/*}@$OWNER_ID/${REPO#*/}@$REPO_ID:environment:production"
 CLIENT_ID="$(az ad app create --display-name "github-$WEB_APP" --query appId --output tsv)"
 az ad sp create --id "$CLIENT_ID" --output none
 az ad app federated-credential create --id "$CLIENT_ID" --parameters "{
-  \"name\": \"github-master\",
+  \"name\": \"github-production\",
   \"issuer\": \"https://token.actions.githubusercontent.com\",
-  \"subject\": \"repo:$REPO:ref:refs/heads/master\",
+  \"subject\": \"$OIDC_SUBJECT\",
   \"audiences\": [\"api://AzureADTokenExchange\"]
 }" --output none
 # Role assignment can fail for a few seconds while the new service principal replicates.

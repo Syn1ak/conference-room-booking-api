@@ -64,7 +64,10 @@ jobs:
             --start-ip-address "$ip" --end-ip-address "$ip" --output none
 
       - name: Migrate the database
-        run: ./efbundle --connection "${{ secrets.SQL_CONNECTION_STRING }}"
+        # The app's DbContext setup reads the connection string from configuration, so the bundle needs it there too.
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.SQL_CONNECTION_STRING }}
+        run: ./efbundle --connection "$ConnectionStrings__DefaultConnection"
 
       - name: Close the SQL firewall again
         if: always()
